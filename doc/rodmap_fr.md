@@ -1,4 +1,4 @@
-# Projet CHREAGE
+# Projet Stigmee
 
 ## Présentation :
 
@@ -34,9 +34,9 @@ Sur le marché, il n'y a aucune solution qui propose une collection d'onglets pe
 
 Les utilisateurs, actuellement, sont obligés à faire une recherche en boucle avec filtrage pour obtenir une collection d'onglets pertinents et ils ne veulent pas fermer leurs navigateurs et les fonctionnalités de favoris sont trop limite et pas pratique.
 
-Donc la solution CHREAGE propose le partage des playlists d'onglet, elle doit être très ergonomique, centraliser, imperméable a la censure et open source.
+Donc la solution Stigmee propose le partage des playlists d'onglet, elle doit être très ergonomique, centraliser, imperméable a la censure et open source.
 
-Pour inciter les gents à utiliser CHREAGE, il faut une fonctionnalité de qualité pour les attirer, la fonction de play-list va jouer ce rôle.
+Pour inciter les gents à utiliser Stigmee, il faut une fonctionnalité de qualité pour les attirer, la fonction de play-list va jouer ce rôle.
 
 Donc, ouvrir les pages comme une collection dans une scène de jeux vidéo (avec des designs bien étudiés ) avec un score basé sur la notion pertiviralite / RELEVIRAL et une récompense via plusieurs types de token (technologie blockchain, token pre-miner, token maximaliste, non-fongible-token nft ) .
 

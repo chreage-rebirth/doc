@@ -1,6 +1,6 @@
-# Chreage's documentation
+# Stigmee's documentation
 
-## What's Chreage ?
+## What's Stigmee ?
 
 https://pastel.archives-ouvertes.fr/tel-03130253/document
 
@@ -8,7 +8,7 @@ https://pastel.archives-ouvertes.fr/tel-03130253/document
 
 - [Godot installation](doc/install_godot_en.md)
 - [Brave installation](doc/install_brave_en.md)
-- [Chreage Docker](https://github.com/chreage-rebirth/bootstrap/blob/master/README.md)
+- [Stigmee Docker](https://github.com/chreage-rebirth/bootstrap/blob/master/README.md)
 
 ## Roadmap
 
