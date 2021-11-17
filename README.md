@@ -19,3 +19,5 @@
 ## For Developpers
 
 - [Docker](doc/tuto_docker_fr.md) (Markdown)
+- [Shared lib](doc/tuto_shared_lib.md) (Markdown)
+- [Ajouter un module Godot](doc/tuto_modif_godot_fr.md) (Markdown)
