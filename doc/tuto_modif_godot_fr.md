@@ -259,3 +259,8 @@ Hello ProxyCEF
 ProxyCEF do action 10
 Bye ProxyCEF
 ```
+
+Si vous avez compilé CEF et Godot depuis un Docker, il vous faut surement indiquer le chemin de la libCEF:
+```bash
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$WORKSPACE_STIGMEE/CEF/chromium_git/chromium/src/out/Release_GN_x64
+```

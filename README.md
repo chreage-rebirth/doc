@@ -42,6 +42,7 @@ Thee an Empire Be": "fais de ta Pensée un Empire".
 
 - [Godot installation](doc/install_godot_en.md) (Markdown)
 - [Brave installation](doc/install_brave_en.md) (Markdown)
+- [Chromium Embedded Framework](doc/install_cef_en.md) (Markdown)
 - [Stigmee Docker](https://github.com/chreage-rebirth/bootstrap/blob/master/README.md) (Markdown)
 
 ## For Developpers

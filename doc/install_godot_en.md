@@ -1,3 +1,7 @@
+# Compilation of Godot's code with Docker
+
+With Docker: see this [README](https://github.com/stigmee/bootstrap/blob/master/README.md) automatically installed when installing Stigmee.
+
 # Compilation of Godot's code source on Windows
 
 # Windows operating system
