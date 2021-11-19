@@ -36,6 +36,7 @@ Thee an Empire Be": "fais de ta Pensée un Empire".
 - [Whitepaper NFT](https://docs.google.com/document/d/1F-e5DK94eEPSF7X0IZ7-aEHj9zRAZOaTeOKrtDbw6WE/edit?usp=sharing) (Google doc)
 - [Design Document](https://docs.google.com/document/d/1XzAblKnWayq8NJW_myVK2IoR4H7Io_25X-UVhYt_dcI/edit?usp=sharing) (Google doc)
 - [Roadmap](doc/roadmap_fr.md) (Markdown)
+- [Decentralisation](doc/Decentralisation_stigmee_1.1.pdf) (pdf)
 
 ## Installation
 
