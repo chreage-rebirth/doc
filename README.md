@@ -29,24 +29,41 @@ Notre Slogan: "Mind Beauty" d'après l'explorateur et Gentleman Extraordinaire
 (Conan Doyle a inventé le terme pour lui) Richard Francis Burton "Thy Thought to
 Thee an Empire Be": "fais de ta Pensée un Empire".
 
-- [Phd Thesis](https://pastel.archives-ouvertes.fr/tel-03130253/document) (pdf)
-- [White paper](doc/Stigmee_Whitepaper.pdf) (pdf)
-- [Whitepaper Stigmee Solid](https://docs.google.com/document/d/16Zkk4eoFl_DlpukDaKD_d2qWO6Evh_TZvCcxoise8t8/edit?usp=sharing) (Google doc)
-- [Whitepaper Stigmee Liquid](https://docs.google.com/document/d/147sKgL1lww9dvO4GscB2m4MaMF9ldygLhSGPFhQ_VXc/edit?usp=sharing) (Google doc)
-- [Whitepaper NFT](https://docs.google.com/document/d/1F-e5DK94eEPSF7X0IZ7-aEHj9zRAZOaTeOKrtDbw6WE/edit?usp=sharing) (Google doc)
-- [Design Document](https://docs.google.com/document/d/1XzAblKnWayq8NJW_myVK2IoR4H7Io_25X-UVhYt_dcI/edit?usp=sharing) (Google doc)
-- [Roadmap](doc/roadmap_fr.md) (Markdown)
-- [Decentralisation](doc/Decentralisation_stigmee_1.1.pdf) (pdf)
+## White Papers
+
+- Phd Thesis (pdf):
+  - [![en](doc/en.png) English](https://pastel.archives-ouvertes.fr/tel-03130253/document)
+- White paper (pdf):
+  - [![en](doc/en.png) English](doc/Stigmee_Whitepaper.pdf)
+- Whitepaper Stigmee Solid (Google doc):
+  - [![fr](doc/fr.png) French](https://docs.google.com/document/d/16Zkk4eoFl_DlpukDaKD_d2qWO6Evh_TZvCcxoise8t8/edit?usp=sharing)
+- Whitepaper Stigmee Liquid (Google doc):
+  - [![fr](doc/fr.png) French](https://docs.google.com/document/d/147sKgL1lww9dvO4GscB2m4MaMF9ldygLhSGPFhQ_VXc/edit?usp=sharing)
+- Whitepaper NFT (Google doc):
+  - [![fr](doc/fr.png) French](https://docs.google.com/document/d/1F-e5DK94eEPSF7X0IZ7-aEHj9zRAZOaTeOKrtDbw6WE/edit?usp=sharing)
+- Design Document( Google doc):
+  - [![fr](doc/fr.png) French](https://docs.google.com/document/d/1XzAblKnWayq8NJW_myVK2IoR4H7Io_25X-UVhYt_dcI/edit?usp=sharing)
+- Roadmap (Markdown):
+  - [![fr](doc/fr.png) French](doc/roadmap_fr.md)
+- Decentralisation (pdf):
+  - [![fr](doc/fr.png) French](doc/Decentralisation_stigmee_1.1.pdf)
 
 ## Installation
 
-- [Godot installation](doc/install_godot_en.md) (Markdown)
-- [Brave installation](doc/install_brave_en.md) (Markdown)
-- [Chromium Embedded Framework](doc/install_cef_en.md) (Markdown)
-- [Stigmee Docker](https://github.com/chreage-rebirth/bootstrap/blob/master/README.md) (Markdown)
+- Godot installation (Markdown):
+  - [![fr](doc/fr.png) French](doc/install_godot_en.md)
+- Brave installation (Markdown):
+  - [![fr](doc/fr.png) French](doc/install_brave_en.md)
+- Chromium Embedded Framework (Markdown):
+  - [![fr](doc/fr.png) French](doc/install_cef_en.md)
+- Stigmee Docker (Markdown):
+  - [![fr](doc/fr.png) French](https://github.com/chreage-rebirth/bootstrap/blob/master/README.md)
 
 ## For Developpers
 
-- [Docker](doc/tuto_docker_fr.md) (Markdown)
-- [Shared lib](doc/tuto_shared_lib.md) (Markdown)
-- [Ajouter un module Godot](doc/tuto_modif_godot_fr.md) (Markdown)
+- Docker (Markdown):
+  - [![fr](doc/fr.png) French](doc/tuto_docker_fr.md)
+- Shared lib (Markdown):
+  - [![fr](doc/fr.png) French](doc/tuto_shared_lib.md)
+- Ajouter un module Godot (Markdown):
+  - [![fr](doc/fr.png) French](doc/tuto_modif_godot_fr.md)
