@@ -15,3 +15,8 @@ There are inportants steps concerning adding two tokens which are not so easy:
 
 GitHub actions are yaml files to be store in the folder `<your project>/.github/workflows/`. If you notice thes files refer to `uses: firebelley/godot-export@v1.1.0` and `josephbmanley/butler-publish-itchio-action@master` which are two external GitHub projects.
 
+## Creating an account on https://itch.io/
+
+- Go to https://itch.io/ and create an account.
+- Install the Linux client: https://itch.io/app download and install it `./itch-setup`.
+I think it's mainly a browser, but for the few I used, it shows statistics on downloads.

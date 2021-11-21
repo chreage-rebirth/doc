@@ -68,4 +68,4 @@ Thee an Empire Be": "fais de ta Pensée un Empire".
 - Ajouter un module Godot (Markdown):
   - [![fr](doc/fr.png) French](doc/tuto_modif_godot_fr.md)
 - Continuous inegration and deployment (Markdown):
-  - [![fr](doc/fr.png) French](doc/continuous_deployment_en.md)
+  - [![en](doc/en.png) English](doc/continuous_deployment_en.md)
