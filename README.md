@@ -69,3 +69,5 @@ Thee an Empire Be": "fais de ta Pensée un Empire".
   - [![fr](doc/fr.png) French](doc/tuto_modif_godot_fr.md)
 - Continuous inegration and deployment (Markdown):
   - [![en](doc/en.png) English](doc/continuous_deployment_en.md)
+- Upgrade Cmake to the lastest version (bash script)
+  - [script](doc/install_latest_cmake.sh)
