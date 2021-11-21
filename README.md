@@ -71,3 +71,5 @@ Thee an Empire Be": "fais de ta Pensée un Empire".
   - [![en](doc/en.png) English](doc/continuous_deployment_en.md)
 - Upgrade Cmake to the lastest version (bash script)
   - [script](doc/install_latest_cmake.sh)
+- Getting fun with CEF (Markdown):
+  - [![en](doc/en.png) English](doc/tuto_fun_cef.md)
