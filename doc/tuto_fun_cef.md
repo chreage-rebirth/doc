@@ -73,13 +73,17 @@ You can launch `ceftests`:
  ./tests/ceftests/Release/ceftests
 ```
 
-## Understanding how cefsimple2 is compiled
+## Understanding how cefsimple is compiled
 
-See also https://github.com/Zabrimus/cef-makefile-sample/blob/master/Makefile
+See also https://github.com/Zabrimus/cef-makefile-sample in where a `pkg-config` file is also created.
 
-`cefsimple2` needs the two local libs (one shared and one static) to be compiled:
+We are going to use the copied folder `cefsimple2` but not directly `cefsimple`.
+
+The application `cefsimple2` needs two local libs (one shared and one static) to be compiled:
 - libcef.so (~1 Gb)
 - libcef_dll_wrapper.a (~5 Mb)
+
+The libcef shared library exports a C API that isolates the user from the CEF runtime and code base. The libcef_dll_wrapper project, which is distributed in source code form as part of the binary release, wraps this exported C API in a C++ API that is then linked into the client application.
 
 Let copy them inside `cefsimple2`:
 ```bash
@@ -96,6 +100,8 @@ Be sure your `LD_LIBRARY_PATH` is refering to the local folder (`.`), else add i
 export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH
 ```
 
+The other solution more complex is to update your `ld.so.conf.d` but I think the simplest solution will consit to modify the CMake to create a static library for libcef (`libcef.a`) to force loading symbols inside the binary.
+
 If you try to run the application `./cefsimple2` it will halt. It needs some local packages. Let copy them (for the moment I do not know how they are compiled):
 ```bash
 (cd $CEF/build/tests/cefsimple/Debug/
@@ -106,7 +112,48 @@ mkdir -p $CEFSIMPLE2/locales
 cp -v $CEF/build/tests/cefsimple/Debug/locales/en-US.pak $CEFSIMPLE2/locales
 ```
 
-If you try to run the application `./cefsimple2` it will show the google page. Else you can provide your URL:
+- chrome-sandbox: sandbox support binary.
+- libcef.so: main CEF library.
+- libcef_dll_wrapper.a: static library that all applications using the CEF C++ API must link against.
+- icudtl.dat: unicode support data.
+- cef.pak, devtools_resources.pak: non-localized resources and strings.
+- natives_blob.bin, snapshot_blob.bin: V8 initial snapshot.
+- locales/*.pak: locale-specific resources and strings.
+- files/binding.html: cefclient application resources.
+
+If you try to run the application `./cefsimple2` it will show the Google page. Else you can provide your URL:
 ```
 ./cefsimple2 --url='https://cef-builds.spotifycdn.com/index.html'
 ```
+
+I also copy:
+```bash
+cp $CEF/Debug/libGLESv2.so $CEF/Debug/libEGL.so $CEFSIMPLE2
+```
+
+To fix these errors:
+```
+[1122/222502.068976:ERROR:egl_util.cc(74)] Failed to load GLES library: ...
+```
+
+And I installed this system packages:
+```bash
+sudo apt-get install libxcb-sync-dev libxcb-dri3-dev libxcb-present-dev
+```
+
+To fix these errors:
+```
+[1122/222607.278155:WARNING:gpu_sandbox_hook_linux.cc(445)] dlopen(libxcb-dri3.so) failed with error: libxcb-dri3.so: Ne peut ouvrir le fichier d'objet partagé: Aucun fichier ou dossier de ce type
+[1122/222607.278459:WARNING:gpu_sandbox_hook_linux.cc(447)] dlopen(libxcb-present.so) failed with error: libxcb-present.so: Ne peut ouvrir le fichier d'objet partagé: Aucun fichier ou dossier de ce type
+[1122/222607.278567:WARNING:gpu_sandbox_hook_linux.cc(450)] dlopen(libxcb-sync.so) failed with error: libxcb-sync.so: Ne peut ouvrir le fichier d'objet partagé: Aucun fichier ou dossier de ce type
+```
+
+## Modifying cefsimple for OpenGL Core or SDL2
+
+WIP
+
+There are non-maintained GitHub repos to replace the libX11 by:
+- SDL2: https://github.com/gotnospirit/cef3-sdl2
+- OpenGL Core: https://github.com/if1live/cef-gl-example
+
+These repos are outdated (> 4 years), they do not compile and when I run them they crashed because of an infinite loop forking the application and finally the system will fall down. I'm currently updating them into https://github.com/Lecrapouille/OffScreenCEF
