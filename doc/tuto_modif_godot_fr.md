@@ -1,6 +1,6 @@
 # Ajouter un module Chromium Embedded Framework à Godot
 
-Comment modifier les sources de Godot version 3-stable (à voir pour Godot
+Comment modifier les sources de Godot version 3.4-stable (à voir pour Godot
 V4-instable) pour ajouter un nouveau type de nœud pour le graphe de scène (aussi
 nommé scene graph ou scene tree) afin de faire un nœud pour
 [CEF](https://bitbucket.org/chromiumembedded/cef/src/master/). Pour ceux qui
@@ -30,15 +30,20 @@ https://docs.godotengine.org/fr/stable/development/cpp/custom_modules_in_cpp.htm
 
 Je fais un résumé adapté pour Stigmee.
 
+## Télécharger Godot v3.4-stable
+
+```bash
+git clone git@github.com:godotengine/godot.git --depth=1 --branch 3.4-dev
+```
+
 ## Télécharger Chromium Embedded Framework
 
 Tout d'abord je télécharge une CEF déjà compilé (car c'est une plaie à compiler):
 https://cef-builds.spotifycdn.com/index.html
 
-Et je décompresse l'archive à l'endroit de votre choix. Pour ce document
-`/home/qq/chreage_workspace/built_CEF/`
+Et je décompresse l'archive à l'endroit de mon choix. Je le place dans `godot/thirdparty/`
 
-## Créer son module Godot v3
+## Créer son module Godot v3.4-stable
 
 Il faut créer un dossier que l'on nommera, par exemple, `cef` dans le dossier
 `godot/modules`. On prendra soin d'éviter de créer des conflits de noms entre
@@ -59,7 +64,7 @@ Il faut ajouter ces deux fonctions afin que notre future classe C++ `ProxyCEF`
 pour notre module doit être enregistrée par Godot. Le terme `cef` doit référer
 au nom de votre dossier.
 
-```
+```C++
 #ifndef STIGMEE_CEF_REGISTER_TYPES_H
 #define STIGMEE_CEF_REGISTER_TYPES_H
 
@@ -71,7 +76,7 @@ void unregister_cef_types();
 
 **Fichier register_types.cpp**
 
-```
+```C++
 #include "register_types.h" // Godot
 #include "core/class_db.h" // Godot
 #include "proxy_cef.h" // Notre module
@@ -99,51 +104,160 @@ def configure(env):
 
 **Fichier proxy_cef.h**
 
-Pour le moment, c'est une classe vide qui ne fait rien avec CEF (à suivre). Pour
-le moment elle se contente d'utiliser des symboles de CEF. Le fichier header
+Pour le moment, c'est une classe vide qui ne fait rien avec CEF mais qui vient de
+https://github.com/Lecrapouille/OffScreenCEF. Les explications du code sont
+[ici](https://github.com/stigmee/doc/blob/master/doc/tuto_fun_cef.md).
+Pour le moment elle se contente d'utiliser des symboles de CEF. Le fichier header
 contient notre classe proxy CEF. Notre classe hérite de Godot soit d'un nœud,
 soit d'une référence, soit d'une ressource.
 
-```C
+```C++
 #ifndef STIGMEE_CEF_H
 #define STIGMEE_CEF_H
 
-#include "scene/main/node.h" // Godot
-#include "include/cef_app.h" // libCEF
+// Godot
+#include "scene/main/node.h"
 
-class ProxyCEF :
-   // Godot
-   public Node, // ou Reference ou Resource
-   // libCEF
-   public CefApp, public CefBrowserProcessHandler
+// Chromium Embedded Framework
+#  include <cef_render_handler.h>
+#  include <cef_client.h>
+#  include <cef_app.h>
+
+class ProxyCEF : public Node
 {
-    GDCLASS(ProxyCEF, Node); // Godot
+private:
 
-public:
-
-    ProxyCEF(); // Constructeur de notre module
-    ~ProxyCEF(); // Destructeur
-    void do_action(int value); // Une action de notre module qui ne fait rien
-
-  // Code libCEF a definir
-  CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler() override
-  {
-    return this;
-  }
-
-  // CefBrowserProcessHandler methods:
-  void OnContextInitialized() override;
-  CefRefPtr<CefClient> GetDefaultClient() override;
+    GDCLASS(ProxyCEF, Node);
 
 protected:
 
-    // Godot
     static void _bind_methods();
+
+public:
+
+    //! \brief Default Constructor using a given URL.
+    ProxyCEF();
+
+    //! \brief
+    ~ProxyCEF();
+
+    //! \brief Load the given web page
+    void load(const std::string &url);
+
+    //! \brief Render the web page
+    void draw();
+
+    //! \brief Set the windows size
+    void reshape(int w, int h);
+
+    //! \brief Set the viewport
+    bool viewport(float x, float y, float w, float h);
+
+    //! \brief Get the viewport
+    //inline glm::vec4 const& viewport() const
+    //{
+    //    return m_viewport;
+    //}
+
+    //! \brief TODO
+    // void executeJS(const std::string &cmd);
+
+    //! \brief Set the new mouse position
+    void mouseMove(int x, int y);
+
+    //! \brief Set the new mouse state (clicked ...)
+    void mouseClick(CefBrowserHost::MouseButtonType btn, bool mouse_up);
+
+    //! \brief Set the new keyboard state (char typed ...)
+    void keyPress(int key, bool pressed);
 
 private:
 
-  // CEF: Include the default reference counting implementation.
-  IMPLEMENT_REFCOUNTING(ProxyCEF);
+    // *************************************************************************
+    //! \brief Private implementation to handle CEF events to draw the web page.
+    // *************************************************************************
+    class RenderHandler: public CefRenderHandler
+    {
+    public:
+
+        //! \brief
+        ~RenderHandler();
+
+        //! \brief Compile OpenGL shaders and create OpenGL objects (VAO,
+        //! VBO, texture, locations ...)
+        bool init();
+
+        //! \brief Render OpenGL VAO (rotating a textured square)
+        void draw();
+
+        //! \brief Resize the view
+        void reshape(int w, int h);
+
+        //! \brief Return the OpenGL texture handle
+        int texture() const
+        {
+            return 0;
+        }
+
+        //! \brief CefRenderHandler interface
+        virtual void GetViewRect(CefRefPtr<CefBrowser> browser, CefRect &rect) override;
+
+        //! \brief CefRenderHandler interface
+        //! Update the OpenGL texture.
+        virtual void OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type,
+                             const RectList &dirtyRects, const void *buffer,
+                             int width, int height) override;
+
+        //! \brief CefBase interface
+        IMPLEMENT_REFCOUNTING(RenderHandler);
+
+    private:
+
+        //! \brief Dimension
+        int m_width;
+        int m_height;
+    };
+
+    // *************************************************************************
+    //! \brief Provide access to browser-instance-specific callbacks. A single
+    //! CefClient instance can be shared among any number of browsers.
+    // *************************************************************************
+    class BrowserClient: public CefClient
+    {
+    public:
+
+        BrowserClient(CefRefPtr<CefRenderHandler> ptr)
+            : m_renderHandler(ptr)
+        {}
+
+        virtual CefRefPtr<CefRenderHandler> GetRenderHandler() override
+        {
+            return m_renderHandler;
+        }
+
+        CefRefPtr<CefRenderHandler> m_renderHandler;
+
+        IMPLEMENT_REFCOUNTING(BrowserClient);
+    };
+
+private:
+
+    //! \brief Mouse cursor position on the OpenGL window
+    int m_mouse_x;
+    int m_mouse_y;
+
+    //! \brief Chromium Embedded framework elements
+    CefRefPtr<CefBrowser> m_browser;
+    CefRefPtr<BrowserClient> m_client;
+    RenderHandler* m_render_handler = nullptr;
+
+    //! \brief OpenGL has created GPU elements with success
+    bool m_initialized = false;
+
+public:
+
+    //! \brief If set to false then the web page is turning.
+    bool m_fixed = true;
 };
 
 #endif // STIGMEE_CEF_H
@@ -151,43 +265,160 @@ private:
 
 **Fichier proxy_cef.cpp**
 
-```
-#include "proxy_cef.h" // Notre module
-#include "cef_command_line.h" // libCEF
-#include "tests/cefsimple/simple_handler.h" // libCEF
-#include <iostream> // std::cout
+```C++
+#include "proxy_cef.h"
+#include <iostream>
 
-ProxyCEF::ProxyCEF()
-{
-    std::cout << "Bye ProxyCEF" << std::endl;
-    //CefRefPtr<CefCommandLine> command_line = nullptr;// = CefCommandLine::CreateCommandLine();
-    //if (command_line != nullptr)
-    //   command_line->InitFromArgv(2, nullptr);
-}
-
-ProxyCEF::~ProxyCEF()
-{
-    std::cout << "Bye ProxyCEF" << std::endl;
-}
-
+//------------------------------------------------------------------------------
 void ProxyCEF::_bind_methods()
 {
-    ClassDB::bind_method(D_METHOD("do_action", "value"), &ProxyCEF::do_action);
+    //ClassDB::bind_method(D_METHOD("do_action", "value"), &ProxyCEF::do_action);
 }
 
-void ProxyCEF::do_action(int value)
+//------------------------------------------------------------------------------
+ProxyCEF::RenderHandler::~RenderHandler()
+{}
+
+//------------------------------------------------------------------------------
+bool ProxyCEF::RenderHandler::init()
 {
-    std::cout << "ProxyCEF do action " << value << std::endl;
+    return true;
 }
 
-void ProxyCEF::OnContextInitialized()
+//------------------------------------------------------------------------------
+void ProxyCEF::RenderHandler::draw()
 {
 }
 
-CefRefPtr<CefClient> ProxyCEF::GetDefaultClient()
+//------------------------------------------------------------------------------
+void ProxyCEF::RenderHandler::reshape(int w, int h)
 {
-  // Called when a new browser window is created via the Chrome runtime UI.
-  return nullptr;//SimpleHandler::GetInstance();
+    m_width = w;
+    m_height = h;
+}
+
+//------------------------------------------------------------------------------
+bool ProxyCEF::viewport(float x, float y, float w, float h)
+{
+    if (!(x >= 0.0f) && (x < 1.0f))
+        return false;
+
+    if (!(x >= 0.0f) && (y < 1.0f))
+        return false;
+
+    if (!(w > 0.0f) && (w <= 1.0f))
+        return false;
+
+    if (!(h > 0.0f) && (h <= 1.0f))
+        return false;
+
+    if (x + w > 1.0f)
+        return false;
+
+    if (y + h > 1.0f)
+        return false;
+
+    return true;
+}
+
+//------------------------------------------------------------------------------
+void ProxyCEF::RenderHandler::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect &rect)
+{
+    rect = CefRect(0, 0, m_width, m_height);
+}
+
+//------------------------------------------------------------------------------
+void ProxyCEF::RenderHandler::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type,
+                            const RectList &dirtyRects, const void *buffer,
+                            int width, int height)
+{
+}
+
+//------------------------------------------------------------------------------
+ProxyCEF::ProxyCEF()
+    : m_mouse_x(0), m_mouse_y(0)
+{
+    CefWindowInfo window_info;
+    window_info.SetAsWindowless(0);
+
+    m_render_handler = new RenderHandler();
+    m_initialized = m_render_handler->init();
+    m_render_handler->reshape(128, 128); // initial size
+
+    CefBrowserSettings browserSettings;
+    browserSettings.windowless_frame_rate = 60; // 30 is default
+
+    m_client = new BrowserClient(m_render_handler);
+    m_browser = CefBrowserHost::CreateBrowserSync(window_info, m_client.get(),
+                                                  ""/*url*/, browserSettings,
+                                                  nullptr, nullptr);
+}
+
+//------------------------------------------------------------------------------
+ProxyCEF::~ProxyCEF()
+{
+    CefDoMessageLoopWork();
+    m_browser->GetHost()->CloseBrowser(true);
+
+    m_browser = nullptr;
+    m_client = nullptr;
+}
+
+//------------------------------------------------------------------------------
+void ProxyCEF::load(const std::string &url)
+{
+    assert(m_initialized);
+    m_browser->GetMainFrame()->LoadURL("");
+}
+
+//------------------------------------------------------------------------------
+void ProxyCEF::draw()
+{
+    CefDoMessageLoopWork();
+    m_render_handler->draw();
+}
+
+//------------------------------------------------------------------------------
+void ProxyCEF::reshape(int w, int h)
+{
+    m_render_handler->reshape(w, h);
+    m_browser->GetHost()->WasResized();
+}
+
+//------------------------------------------------------------------------------
+void ProxyCEF::mouseMove(int x, int y)
+{
+    m_mouse_x = x;
+    m_mouse_y = y;
+
+    CefMouseEvent evt;
+    evt.x = x;
+    evt.y = y;
+
+    bool mouse_leave = false; // TODO
+    m_browser->GetHost()->SendMouseMoveEvent(evt, mouse_leave);
+}
+
+//------------------------------------------------------------------------------
+void ProxyCEF::mouseClick(CefBrowserHost::MouseButtonType btn, bool mouse_up)
+{
+    CefMouseEvent evt;
+    evt.x = m_mouse_x;
+    evt.y = m_mouse_y;
+
+    int click_count = 1; // TODO
+    m_browser->GetHost()->SendMouseClickEvent(evt, btn, mouse_up, click_count);
+}
+
+//------------------------------------------------------------------------------
+void ProxyCEF::keyPress(int key, bool pressed)
+{
+    CefKeyEvent evt;
+    evt.character = key;
+    evt.native_key_code = key;
+    evt.type = pressed ? KEYEVENT_CHAR : KEYEVENT_KEYUP;
+
+    m_browser->GetHost()->SendKeyEvent(evt);
 }
 ```
 
@@ -196,19 +427,19 @@ CefRefPtr<CefClient> ProxyCEF::GetDefaultClient()
 Il sert de Makefile pour compiler les sources. On inclut les sous répertoires du dossier include de CEF
 ```
 Import('env')
-
-env.Append(CPPPATH = ['/home/qq/chreage_workspace/built_CEF/'])
-env.Append(CPPPATH = ['/home/qq/chreage_workspace/built_CEF/include'])
-env.Append(CPPPATH = ['/home/qq/chreage_workspace/built_CEF/include/base'])
-env.Append(CPPPATH = ['/home/qq/chreage_workspace/built_CEF/include/base/internal'])
-env.Append(CPPPATH = ['/home/qq/chreage_workspace/built_CEF/include/capi'])
-env.Append(CPPPATH = ['/home/qq/chreage_workspace/built_CEF/include/capi/test'])
-env.Append(CPPPATH = ['/home/qq/chreage_workspace/built_CEF/include/capi/views'])
-env.Append(CPPPATH = ['/home/qq/chreage_workspace/built_CEF/include/internal'])
-env.Append(CPPPATH = ['/home/qq/chreage_workspace/built_CEF/include/test'])
-env.Append(CPPPATH = ['/home/qq/chreage_workspace/built_CEF/include/views'])
-env.Append(CPPPATH = ['/home/qq/chreage_workspace/built_CEF/include/wrapper'])
-env.Append(LIBS = 'cef', LIBPATH = ['/home/qq/chreage_workspace/built_CEF/Debug/'])
+env.Append(CPPPATH = ['#thirdparty/cef_binary'])
+env.Append(CPPPATH = ['#thirdparty/cef_binary/include'])
+env.Append(CPPPATH = ['#thirdparty/cef_binary/include/base'])
+env.Append(CPPPATH = ['#thirdparty/cef_binary/include/base/internal'])
+env.Append(CPPPATH = ['#thirdparty/cef_binary/include/capi'])
+env.Append(CPPPATH = ['#thirdparty/cef_binary/include/capi/test'])
+env.Append(CPPPATH = ['#thirdparty/cef_binary/include/capi/views'])
+env.Append(CPPPATH = ['#thirdparty/cef_binary/include/internal'])
+env.Append(CPPPATH = ['#thirdparty/cef_binary/include/test'])
+env.Append(CPPPATH = ['#thirdparty/cef_binary/include/views'])
+env.Append(CPPPATH = ['#thirdparty/cef_binary/include/wrapper'])
+env.Append(LIBS = 'cef', LIBPATH = ['#main'])
+env.Append(LIBS = 'libcef_dll_wrapper', LIBPATH = ['#main'])
 env.add_source_files(env.modules_sources, "*.cpp")
 ```
 
@@ -216,11 +447,129 @@ Documentation Scons:
 - https://www.scons.org/doc/0.93/HTML/scons-user/x275.html
 - https://scons.org/doc/1.3.0/HTML/scons-user/x4763.html
 
-## Compilation du module Godot
+## Modification du main de Godot v3.4-stable
+
+On doit lancer CEF. Celui-ci a besoin du `argc` et `argv` de la fonction `main`.
+CEF ajoute des informations à ses processus forkés. Ceci impacte Godot qui lui aussi
+à besoin du `argc` et `argv` pour lancer son éditeur 3D. On doit en faire des copies.
+Si on ne reseigne pas `argc` et `argv` à CEF celui-ci peut partir en boucle infinie
+en lançant des forks et tuer votre système d'exploitation.
+
+Modifions le fichier `godot/platform/x11/godot_x11.cpp` :
+```C++
+// Chromium Embedded Framework
+#  include <cef_render_handler.h>
+#  include <cef_client.h>
+#  include <cef_app.h>
+#  include <iostream>
+
+//------------------------------------------------------------------------------
+static void CEFsetUp(int argc, char** argv)
+{
+    std::cerr << "CEFsetUp" << std::endl;
+    CefMainArgs args(argc, argv);
+    int exit_code = CefExecuteProcess(args, nullptr, nullptr);
+    if (exit_code >= 0)
+    {
+        std::cerr << "CefExecuteProcess: child proccess has endend, so exit" << std::endl;
+        exit(exit_code);
+    }
+    else if (exit_code == -1)
+    {
+        // we are here in the father proccess.
+        std::cerr << "CefExecuteProcess: father" << std::endl;
+    }
+
+    std::cerr << "CEFsetUp: done" << std::endl;
+    // Configurate Chromium
+    CefSettings settings;
+    // TODO CefString(&settings.locales_dir_path) = "cef/linux/lib/locales";
+    settings.windowless_rendering_enabled = true;
+//#if !defined(CEF_USE_SANDBOX)
+    settings.no_sandbox = true;
+//#endif
+
+    bool result = CefInitialize(args, settings, nullptr, nullptr);
+    if (!result)
+    {
+        std::cerr << "CefInitialize: failed" << std::endl;
+        exit(-2);
+    }
+    std::cerr << "CEFsetUp: OK" << std::endl;
+}
+
+int main(int argc, char *argv[])
+{
+        std::cerr << "CEFsetUp: avant " << std::endl;
+        std::vector<std::string> backup_args;
+        for (int i = 0; i < argc; ++i)
+        {
+           std::cerr << "arg " << i << ": " << argv[i] << std::endl;
+           backup_args.push_back(argv[i]);
+        }
+
+        CEFsetUp(argc, argv);
+        std::cerr << "CEFsetUp: Apres " << std::endl;
+        for (int i = 0; i < argc; ++i)
+        {
+           std::cerr << "arg " << i << ": " << argv[i] << std::endl;
+           argv[i] = &(backup_args[i][0]);
+        }
+
+	OS_X11 os;
+
+	setlocale(LC_CTYPE, "");
+
+	char *cwd = (char *)malloc(PATH_MAX);
+	ERR_FAIL_COND_V(!cwd, ERR_OUT_OF_MEMORY);
+	char *ret = getcwd(cwd, PATH_MAX);
+
+	Error err = Main::setup(argv[0], argc - 1, &argv[1]);
+	if (err != OK) {
+		free(cwd);
+                CefShutdown();
+		return 255;
+	}
+
+	if (Main::start()) {
+		os.run(); // it is actually the OS that decides how to run
+	}
+	Main::cleanup();
+
+	if (ret) { // Previous getcwd was successful
+		if (chdir(cwd) != 0) {
+			ERR_PRINT("Couldn't return to previous working directory.");
+		}
+	}
+	free(cwd);
+
+        CefShutdown();
+	return os.get_exit_code();
+}
+```
+
+Il faut ajouter ce code dans le fichier Scub du même répertoire:
+```
+env.Append(CPPPATH = ['#thirdparty/cef_binary'])
+env.Append(CPPPATH = ['#thirdparty/cef_binary/include'])
+env.Append(CPPPATH = ['#thirdparty/cef_binary/include/base'])
+env.Append(CPPPATH = ['#thirdparty/cef_binary/include/base/internal'])
+env.Append(CPPPATH = ['#thirdparty/cef_binary/include/capi'])
+env.Append(CPPPATH = ['#thirdparty/cef_binary/include/capi/test'])
+env.Append(CPPPATH = ['#thirdparty/cef_binary/include/capi/views'])
+env.Append(CPPPATH = ['#thirdparty/cef_binary/include/internal'])
+env.Append(CPPPATH = ['#thirdparty/cef_binary/include/test'])
+env.Append(CPPPATH = ['#thirdparty/cef_binary/include/views'])
+env.Append(CPPPATH = ['#thirdparty/cef_binary/include/wrapper'])
+env.Append(LIBS = 'cef', LIBPATH = ['#main'])
+env.Append(LIBS = 'libcef_dll_wrapper', LIBPATH = ['#main'])
+```
+
+## Compilation du module Godot v3.4-stable
 
 On compile en allant dans le répertoire parent de Godot et faire (pour Linux):
 ```
-scons -j$(nproc) platform=linuxbsd
+scons -j$(nproc) platform=x11
 ```
 
 Evidemment, la compilation ne se passe pas bien. En effet Godot et CEF semblent
@@ -264,3 +613,4 @@ Si vous avez compilé CEF et Godot depuis un Docker, il vous faut surement indiq
 ```bash
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$WORKSPACE_STIGMEE/CEF/chromium_git/chromium/src/out/Release_GN_x64
 ```
+

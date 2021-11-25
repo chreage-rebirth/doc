@@ -2,8 +2,7 @@
 
 Tested on Debian 11 64-bits.
 
-Firstly, let name some folders. This will shorter code in this document. Adapt the CEF version to ypur operating system with the desired
-version on https://cef-builds.spotifycdn.com/index.html:
+Firstly, let name some folders. This will shorter code in this document. Adapt the CEF version to your operating system with the desired version on https://cef-builds.spotifycdn.com/index.html:
 ```bash
 TMP=/tmp
 CEF_LINK=https://cef-builds.spotifycdn.com/cef_binary_96.0.14%2Bg28ba5c8%2Bchromium-96.0.4664.55_linux64.tar.bz2
@@ -150,10 +149,33 @@ To fix these errors:
 
 ## Modifying cefsimple for OpenGL Core or SDL2
 
-WIP
-
 There are non-maintained GitHub repos to replace the libX11 by:
 - SDL2: https://github.com/gotnospirit/cef3-sdl2
 - OpenGL Core: https://github.com/if1live/cef-gl-example
 
 These repos are outdated (> 4 years), they do not compile and when I run them they crashed because of an infinite loop forking the application and finally the system will fall down. I'm currently updating them into https://github.com/Lecrapouille/OffScreenCEF
+
+Explication du code source [cefsimple_opengl](https://github.com/Lecrapouille/OffScreenCEF/blob/master/cefsimple_opengl)
+
+- [GLCore.hpp](https://github.com/Lecrapouille/OffScreenCEF/blob/master/cefsimple_opengl/GLCore.hpp) c'est juste une collections de methodes statiques (donc des fonctions dans un namespace) comme aide a OpenGL pour compiler les shaders :
+  - Le [vertex shader](https://github.com/Lecrapouille/OffScreenCEF/blob/master/cefsimple_opengl/shaders/tex.vert), qui se lance pour chaque sommet. Son entree `position` est la position des sommets. `MVP` (model view projection) c'est pour appliquer la rotation sur les sommets. `Texcoord` c'est les positions de la texture sur les sommets.
+  - Le [fragment shader](https://github.com/Lecrapouille/OffScreenCEF/blob/master/cefsimple_opengl/shaders/tex.frag) c'est le fragment shader: les couleurs du rectangle proviennent des couleurs de la texture. On supprime les pixels transparents.
+
+- [GLWindow.hpp](https://github.com/Lecrapouille/OffScreenCEF/blob/master/cefsimple_opengl/GLWindow.hpp#) c'est une classe qui encapsule une fenetre classique créée par la lib glfw3 (ligne 24 + methode `init()`) il y a les classique methodes virtuelles `setup()` et `update()` qui sont appellées par la méthode `start()` et qui permettent à la classe fille d'implémenter l'init du jeu et l'update du jeu.
+
+- [main.hpp](https://github.com/Lecrapouille/OffScreenCEF/blob/master/cefsimple_opengl/main.hpp#L184)
+c'est la classe qui hérite de la fenetre GLWindow, ajoute/supprime des "browsers" CEF (ligne 217 `std::vector<std::shared_ptr<BrowserView>> m_browsers;`) et implemente les methodes `setup()` et `update()`.
+
+- [main.hpp](https://github.com/Lecrapouille/OffScreenCEF/blob/master/cefsimple_opengl/main.hpp#L25)
+c'est la classe qui encapsule 3 classes privées qui dérivent de l'API CEF: `CefRenderHandler` et `CefClient` (ligne 70 et 139). `BrowserView::RenderHandler::OnPaint` (ligne 100) est appellée par CEF quand il veut que l'on dessine. Cette classe contient tout l'artirail OpenGL: chargement + compilation, du shader + l'envoi du buffer CEF vers la texture OpenGL. La classe `BrowserView` encapsule tout ca.
+
+- [main.cpp](https://github.com/Lecrapouille/OffScreenCEF/blob/master/cefsimple_opengl/main.cpp#L435) on demarre CEF qui lance tous ces forks.
+
+- [main.cpp](https://github.com/Lecrapouille/OffScreenCEF/blob/master/cefsimple_opengl/main.cpp#L435)
+je créé 2 browser avec leurs URL. Ligne 364 je définie où OpenGL doit dessiner sur la fenetre (c'est en pourcentage de la dimension de la fenetre). Donc j'ai demandé de dessiner sur 2 régions verticales. Ligne 368: bidouille pour dire au a la classe renderer de faire tourner la texture. Ligne 371 je créé des callbacks sur les événements de la fenetre: click souris, souris bouge, touche du clavier, redimensionnement de la fenetre. Les callbacks sont dés la ligne 8: reshape_callback ... elles dispatch les événements vers les browsers (et convertissent les types glfw3 vers CEF. D'ailleurs mon code pour le clavier est buggé).
+
+- [main.cpp](https://github.com/Lecrapouille/OffScreenCEF/blob/master/cefsimple_opengl/main.cpp#L84 chargement du shader OpenGL) On crée un rectangle (2 triangles). On charge un shader pour chaque browser. https://github.com/Lecrapouille/OffScreenCEF/blob/master/cefsimple_opengl/main.cpp#L84 On dessine la texture dans le view port. https://github.com/Lecrapouille/OffScreenCEF/blob/master/cefsimple_opengl/main.cpp#L84 CEF nous demande le viewport qu'on lui envoie. https://github.com/Lecrapouille/OffScreenCEF/blob/master/cefsimple_opengl/main.cpp#L84 CEF nous envoie son image que l'on place dans la texture.
+
+- [main.cpp](https://github.com/Lecrapouille/OffScreenCEF/blob/master/cefsimple_opengl/main.cpp#L397) c'est la fonction qui faudra remplacer car elle lit les messages et j'ai l'impression que c'est ca qui rend l'application peut reactive (clic souris ...) sinon lire une vidéo youtube est rapide (pas de temps de l'attence) mais le scrollbar d'une fenetre est super long.
+
+Pour Godot on aura besoin du viewport: a gauche la scene 3D, à droite la page web (uniquement si on a cliquer sur un lien web). On n'aura pas besoin de shader OpenGL je pense qu'un sprite Godot devrait faire l'affaire.

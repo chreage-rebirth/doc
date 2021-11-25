@@ -65,11 +65,11 @@ Thee an Empire Be": "fais de ta Pensée un Empire".
   - [![fr](doc/fr.png) French](doc/tuto_docker_fr.md)
 - Shared lib (Markdown):
   - [![fr](doc/fr.png) French](doc/tuto_shared_lib.md)
-- Ajouter un module Godot (Markdown):
+- Getting fun with CEF (Markdown):
+  - [![en](doc/en.png) English](doc/tuto_fun_cef.md)
+- Ajouter un module CEF pour Godot (Markdown):
   - [![fr](doc/fr.png) French](doc/tuto_modif_godot_fr.md)
 - Continuous inegration and deployment (Markdown):
   - [![en](doc/en.png) English](doc/continuous_deployment_en.md)
 - Upgrade Cmake to the lastest version (bash script)
   - [script](doc/install_latest_cmake.sh)
-- Getting fun with CEF (Markdown):
-  - [![en](doc/en.png) English](doc/tuto_fun_cef.md)
