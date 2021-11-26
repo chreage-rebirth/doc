@@ -1,4 +1,4 @@
-# Aide pour Docker adapté au projet Stigmee
+# Introduction rapide à Docker adapté au projet Stigmee
 
 Projet Stigmee: https://github.com/stigmee
 
@@ -21,14 +21,24 @@ https://devopssec.fr/article/creer-ses-propres-images-docker-dockerfile#begin-ar
 
 ## Téléchargement d'une image depuis https://hub.docker.com
 
-Nous allons télécharger une image déjà prête depuis https://hub.docker.com avec la commande suivante :
+Nous allons télécharger une image déjà prête depuis https://hub.docker.com.
+- Créer un compte Docker et aller au repository: https://hub.docker.com/r/lecrapouille/stigmee
+- Taper la commande suivante (bash ou powershell) :
 ```bash
 docker pull lecrapouille/stigmee:first
+Using default tag: latest
+latest: Pulling from lecrapouille/stigmee
+Digest: sha256:580216370dc62ca1119e5ead8670ca8c1c9183561c38114254c5acc74945680c
+Status: Image is up to date for lecrapouille/stigmee:latest
+docker.io/lecrapouille/stigmee:latest
 ```
 
 Où `first` est un nom de tag qui existe. La liste des autres tags est donnée
 [ici](https://hub.docker.com/r/lecrapouille/stigmee/tags). Cette image est celle
 d'une Debian 10 modifiée pour les besoins de notre projet.
+
+Note: in my case this was already in sync but downloading the image will depend on your connection speed)
+You can then start the docker container from that image.
 
 ## Création d'une image
 
@@ -183,4 +193,49 @@ permet de lancer l'application `xclock` si elle a été installée dans votre im
 
 ```
 docker run -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix --user="$(id --user):$(id --group)" lecrapouille/stigmee:first xclock
+```
+
+# Docker installation for Windows
+
+## Enabling Hyper-V / Compatibility with other paravirtualization layers
+
+For those who are new to docker, after installing the software from https://docs.docker.com/desktop/windows/install/
+do not forget :
+
+- Activate Hyper-V support in the Bios (should already by activated on recent platforms)
+- enable the Hyper-V feature :
+
+From a PowerSHell command line
+```bash
+Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All
+```
+(or alternatively, go to "Enable or disable windows features" and check the Hyper-V group)
+(restart your system)
+
+Depending on the configuration, it's still possible that Hyper-V is not enable at that point, in which case Docker will raise an error upon startup.
+It that is the case, the following command should solve the issue :
+```bash
+bcdedit /set hypervisorlaunchtype auto
+```
+(restart your system)
+
+Note : Docker is not compatible with other virtualisazation subsystem (notably VirtualBox), so note the use of both systems might not be possible depending on which software you are using and which paravirtualized layer it is build on. to be able to use Virtualbox at that point, you will need to disable Hyper-V like so :
+```bash
+bcdedit /set hypervisorlaunchtype off
+```
+
+## Configure Docker storage
+
+If you've got several hard drives installed in your system, it might be advisable to change the location of Docker's virtual storage to avoid filling up your system partition.
+For example, the cammands below will transfer the virtual storage to D:\Docker
+
+```bash
+C:\Users\Alain>wsl --shutdown
+
+C:\Users\Alain>wsl --export docker-desktop-data docker-desktop-data.tar
+
+C:\Users\Alain>wsl --unregister docker-desktop-data
+Désinscription...
+
+C:\Users\Alain>wsl --import docker-desktop-data D:\Docker\ docker-desktop-data.tar --version 2
 ```
