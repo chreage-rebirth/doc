@@ -1,4 +1,4 @@
-# Getting fun with CEF
+# Getting fun with Chromium Embedded Framework (CEF)
 
 Tested on Debian 11 64-bits.
 
