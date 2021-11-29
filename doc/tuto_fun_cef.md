@@ -1,8 +1,11 @@
 # Getting fun with Chromium Embedded Framework (CEF)
 
-Tested on Debian 11 64-bits.
+Let experiment with prebuilt CEF **alone** (meaning without Godot). We will understand how the `cefsimple` application given in the `tests` folder is compiled. This application demonstrates the minimal functionality required to create a browser window. This is
+the minimal code source needed to embed inside Godot.
 
-Firstly, let name some folders. This will shorter code in this document. Adapt the CEF version to your operating system with the desired version on https://cef-builds.spotifycdn.com/index.html:
+These steps have been tested on Debian 11 64-bits and Ubuntu 18.04 64-bits.
+
+Firstly, let name some folders. This will make our code shorter in this document. Do not forget to adapt the CEF version to your operating system with the desired version on https://cef-builds.spotifycdn.com/index.html:
 ```bash
 TMP=/tmp
 CEF_LINK=https://cef-builds.spotifycdn.com/cef_binary_96.0.14%2Bg28ba5c8%2Bchromium-96.0.4664.55_linux64.tar.bz2
@@ -24,14 +27,17 @@ cp -r $CEFSIMPLE $CEFSIMPLE2
 rm -f $CEFSIMPLE2/CMakeLists.txt
 ```
 
-## Compile chrome-sandbox, cefclient, cefsimple, ceftests
+## Cmake >= 3.19 is needed
 
-### Cmake >= 3.19 is needed
-
-You can look at this bash script to upgrade your cmake:
+On Debian 11, the cmake version is too old. You can look at this bash script to upgrade your cmake:
 https://github.com/stigmee/doc/blob/master/doc/install_latest_cmake.sh
 
-More information can be found at: https://pastebin.com/trVzB1J7
+More information can be found at: https://trendoceans.com/how-to-install-cmake-on-debian-10-11/
+
+## Compile chrome-sandbox, cefclient, cefsimple, ceftests
+
+This compilation step is important not only for compiling examples but also because compiled packages
+and library will be needed for the Stigmee project.
 
 ```bash
 mkdir $CEF/build
@@ -41,22 +47,28 @@ make -j$(nproc)
 # make -j$(nproc) cefclient cefsimple ceftests
 ```
 
+You can also follow https://github.com/Zabrimus/cef-makefile-sample in where a `pkg-config` file is created making simpler
+the integration of CEF inside other projects.
+
+Now, let check if our compiled binaries are functional!
+
 ### cefsimple
 
-Contains the cefsimple sample application configured to build
-using the files in this distribution. This application demonstrates
-the minimal functionality required to create a browser window.
+This application demonstrates the minimal functionality required to create a browser window.
 
 You can launch `cefsimple`:
 ```bash
 ./tests/cefsimple/Release/cefsimple
 ```
 
+If you try to run the application `./cefsimple` it will show the Google page. Else you can provide your URL:
+```
+./cefsimple --url='https://cef-builds.spotifycdn.com/index.html'
+```
+
 ### cefclient
 
-Contains the cefclient sample application configured to build
-using the files in this distribution. This application demonstrates
-a wide range of CEF functionalities.
+This application demonstrates a wide range of CEF functionalities.
 
 You can launch `cefclient`:
 ```bash
@@ -74,32 +86,36 @@ You can launch `ceftests`:
 
 ## Understanding how cefsimple is compiled
 
-See also https://github.com/Zabrimus/cef-makefile-sample in where a `pkg-config` file is also created.
-
-We are going to use the copied folder `cefsimple2` but not directly `cefsimple`.
+Since `cefsimple` is working, we no longer need it and we are using the copied folder `cefsimple2` and try to redo manually steps that cmake made for us, as seen in the previous section.
 
 The application `cefsimple2` needs two local libs (one shared and one static) to be compiled:
-- libcef.so (~1 Gb)
-- libcef_dll_wrapper.a (~5 Mb)
+- libcef.so (~1 Gb) already present within the tarball.
+- libcef_dll_wrapper.a (~5 Mb) compiled thru cmake in the previous step.
 
-The libcef shared library exports a C API that isolates the user from the CEF runtime and code base. The libcef_dll_wrapper project, which is distributed in source code form as part of the binary release, wraps this exported C API in a C++ API that is then linked into the client application.
+The `libcef shared` library exports a C API that isolates the user from the CEF runtime and code base. The `libcef_dll_wrapper` project, which is distributed in source code form as part of the binary release, wraps this exported C API in a C++ API that is then linked into the client application.
 
 Let copy them inside `cefsimple2`:
 ```bash
 cp -v $CEF/Debug/libcef.so $CEF/build/libcef_dll_wrapper/libcef_dll_wrapper.a $CEFSIMPLE2
 ```
 
-Let compile `cefsimple2` (c++ >= version 14 is needed). Since this example creat X11 window you'll need the `-lX11`:
+Let compile `cefsimple2` (c++ >= version 14 is needed). Since this example creates a X11 window, you'll need the X11 library `-lX11`:
 ```bash
 g++ --std=c++14 -W -Wall -Wno-unused-parameter -DCEF_USE_SANDBOX -DNDEBUG -D_FILE_OFFSET_BITS=64 -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -I$CEF -I$CEF/include cefsimple_linux.cc simple_app.cc simple_handler.cc simple_handler_linux.cc -o cefsimple2 ./libcef.so ./libcef_dll_wrapper.a -lX11
 ```
 
-Be sure your `LD_LIBRARY_PATH` is refering to the local folder (`.`), else add it:
+- The `-DNDEBUG` is for disabling the `#include <assert>` (See https://stackoverflow.com/a/5354352/8877076)
+- The `-DCEF_USE_SANDBOX` is explained here https://bitbucket.org/chromiumembedded/cef/wiki/SandboxSetup
+- The `-D_FILE_OFFSET_BITS=64` is probably for working with files larger than 2Gb.
+- The `-D__STDC_FORMAT_MACROS` is for https://www.cplusplus.com/reference/cinttypes/
+- The `-I` are for searching header files in given folders.
+
+Be sure your `LD_LIBRARY_PATH` is refering to the local folder (`.`), else add it (or save it insie your `~/.bashrc` file):
 ```bash
 export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH
 ```
 
-The other solution more complex is to update your `ld.so.conf.d` but I think the simplest solution will consit to modify the CMake to create a static library for libcef (`libcef.a`) to force loading symbols inside the binary.
+The other solution, more complex, is to update your `ld.so.conf.d` but I think the simplest solution will consit to modify the CMake to create a static library for libcef (`libcef.a`) to force loading symbols inside the binary.
 
 If you try to run the application `./cefsimple2` it will halt. It needs some local packages. Let copy them (for the moment I do not know how they are compiled):
 ```bash
@@ -111,6 +127,7 @@ mkdir -p $CEFSIMPLE2/locales
 cp -v $CEF/build/tests/cefsimple/Debug/locales/en-US.pak $CEFSIMPLE2/locales
 ```
 
+Summary files, from the CEF official documentation:
 - chrome-sandbox: sandbox support binary.
 - libcef.so: main CEF library.
 - libcef_dll_wrapper.a: static library that all applications using the CEF C++ API must link against.
@@ -119,6 +136,9 @@ cp -v $CEF/build/tests/cefsimple/Debug/locales/en-US.pak $CEFSIMPLE2/locales
 - natives_blob.bin, snapshot_blob.bin: V8 initial snapshot.
 - locales/*.pak: locale-specific resources and strings.
 - files/binding.html: cefclient application resources.
+
+Here a screenshot of what you are supposed to have inside your folder:
+![cef_simple](cef_simple.png)
 
 If you try to run the application `./cefsimple2` it will show the Google page. Else you can provide your URL:
 ```
@@ -153,15 +173,32 @@ There are non-maintained GitHub repos to replace the libX11 by:
 - SDL2: https://github.com/gotnospirit/cef3-sdl2
 - OpenGL Core: https://github.com/if1live/cef-gl-example
 
-These repos are outdated (> 4 years), they do not compile and when I run them they crashed because of an infinite loop forking the application and finally the system will fall down. I'm currently updating them into https://github.com/Lecrapouille/OffScreenCEF
+These repos are outdated (> 4 years), they do not compile and when I run them they crashed because of an infinite loop forking the application and finally the system will fall down. I have updated them into https://github.com/Lecrapouille/OffScreenCEF (the OpenGL version needs a better conversion of key pressed between glfw3 types and CEF types). One of the main reason is the non respect of the logic:
 
-Explication du code source [cefsimple_opengl](https://github.com/Lecrapouille/OffScreenCEF/blob/master/cefsimple_opengl)
+```C++
+int main(int argc, char* argv[])
+{
+  CefMainArgs main_args(argc, argv);
 
-- [GLCore.hpp](https://github.com/Lecrapouille/OffScreenCEF/blob/master/cefsimple_opengl/GLCore.hpp) c'est juste une collections de methodes statiques (donc des fonctions dans un namespace) comme aide a OpenGL pour compiler les shaders :
-  - Le [vertex shader](https://github.com/Lecrapouille/OffScreenCEF/blob/master/cefsimple_opengl/shaders/tex.vert), qui se lance pour chaque sommet. Son entree `position` est la position des sommets. `MVP` (model view projection) c'est pour appliquer la rotation sur les sommets. `Texcoord` c'est les positions de la texture sur les sommets.
-  - Le [fragment shader](https://github.com/Lecrapouille/OffScreenCEF/blob/master/cefsimple_opengl/shaders/tex.frag) c'est le fragment shader: les couleurs du rectangle proviennent des couleurs de la texture. On supprime les pixels transparents.
+  // CEF applications have multiple sub-processes (render, plugin, GPU, etc)
+  // that share the same executable. This function checks the command-line and,
+  // if this is a sub-process, executes the appropriate logic.
+  int exit_code = CefExecuteProcess(main_args, nullptr, nullptr);
+  if (exit_code >= 0) {
+    // The sub-process has completed so exit the application.
+    return exit_code;
+  }
+```
 
-- [GLWindow.hpp](https://github.com/Lecrapouille/OffScreenCEF/blob/master/cefsimple_opengl/GLWindow.hpp#) c'est une classe qui encapsule une fenetre classique créée par la lib glfw3 (ligne 24 + methode `init()`) il y a les classique methodes virtuelles `setup()` et `update()` qui sont appellées par la méthode `start()` et qui permettent à la classe fille d'implémenter l'init du jeu et l'update du jeu.
+`argc, argv` are used by CEF/Chromium when forking they are passing informatio
+
+Explanation of the source code (OpenGL version) [cefsimple_opengl](https://github.com/Lecrapouille/OffScreenCEF/blob/master/cefsimple_opengl)
+
+- [GLCore.hpp](https://github.com/Lecrapouille/OffScreenCEF/blob/master/cefsimple_opengl/GLCore.hpp) it's just a collection of static methods (hence functions in a namespace) as a help to OpenGL to compile shaders:
+  - The [vertex shader](https://github.com/Lecrapouille/OffScreenCEF/blob/master/cefsimple_opengl/shaders/tex.vert), which launches for each summit. Its input `position` is the position of the vertices. `MVP` (model view projection) is to apply the rotation on the vertices. `Texcoord` is the positions of the texture on the vertices.
+  - Le [fragment shader](https://github.com/Lecrapouille/OffScreenCEF/blob/master/cefsimple_opengl/shaders/tex.frag) this is the fragment shader: the colors of the rectangle come from the colors of the texture. We remove the transparent pixels.
+
+- [GLWindow.hpp](https://github.com/Lecrapouille/OffScreenCEF/blob/master/cefsimple_opengl/GLWindow.hpp#) it is a class which encapsulates a classic window created by the lib glfw3 (method `init ()`) there are the classic private and virtual methods `setup ()` and `update ()` which are called by the method `start ()` and which allow the daughter class to implement the game init and the game update.
 
 - [main.hpp](https://github.com/Lecrapouille/OffScreenCEF/blob/master/cefsimple_opengl/main.hpp#L184)
 c'est la classe qui hérite de la fenetre GLWindow, ajoute/supprime des "browsers" CEF (ligne 217 `std::vector<std::shared_ptr<BrowserView>> m_browsers;`) et implemente les methodes `setup()` et `update()`.
