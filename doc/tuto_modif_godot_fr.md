@@ -587,7 +587,34 @@ par :
 #define NET_ERROR(label, value) CEF__ERR_##label = value,
 ```
 
-Il reste un warning. Il faudra faire un patch pour CEF.
+Cette modification, fonctionne pour le moment mais fera échouer la compilation de CEF au prochain coup.
+Une meilleure solution consiste à chnager temporairement les noms des erreurs CEF (ou Godot) le temps
+d'inclure les includes.
+```c++
+// Chromium Embedded Framework
+#define ERR_OUT_OF_MEMORY CEF__ERR_OUT_OF_MEMORY
+#define ERR_FILE_NOT_FOUND CEF__ERR_FILE_NOT_FOUND
+
+#  include <cef_types.h>
+#  include <cef_render_handler.h>
+#  include <cef_client.h>
+#  include <cef_app.h>
+#  include <cef_helpers.h>
+
+#undef ERR_OUT_OF_MEMORY
+#undef ERR_FILE_NOT_FOUND
+
+// Godot
+//#define ERR_OUT_OF_MEMORY GODOT__ERR_OUT_OF_MEMORY
+//#define ERR_FILE_NOT_FOUND GODOT__ERR_FILE_NOT_FOUND
+#  include "core/error_list.h"
+#  include "scene/main/node.h"
+#  include "scene/resources/texture.h"
+//#undef ERR_OUT_OF_MEMORY
+//#undef ERR_FILE_NOT_FOUND
+```
+
+Il reste un dernier warning mais il ne semble pas impacter note module. Il faudra quand même investiguer dessus.
 
 ## Vérification du module Godot
 
