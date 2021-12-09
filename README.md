@@ -61,15 +61,17 @@ Thee an Empire Be": "fais de ta Pensée un Empire".
 
 ## For Developpers
 
+- Git and GitHub for Stigmee (Markdown):
+  - [![fr](doc/fr.png) French](doc/tuto_git_fr.md)
+- Continuous inegration and deployment with GitHub (Markdown):
+  - [![en](doc/en.png) English](doc/continuous_deployment_en.md)
 - Docker (Markdown):
   - [![fr](doc/fr.png) French](doc/tuto_docker_fr.md)
-- Shared lib (Markdown):
+- Shared lib with C langage (Markdown):
   - [![fr](doc/fr.png) French](doc/tuto_shared_lib.md)
-- Getting fun with CEF (Markdown):
+- Getting fun with Chromium Embedded Framework (Markdown):
   - [![en](doc/en.png) English](doc/tuto_fun_cef.md)
-- Ajouter un module CEF pour Godot (Markdown):
+- Add a Chromium Embedded Framework module for Godot (Markdown):
   - [![fr](doc/fr.png) French](doc/tuto_modif_godot_fr.md)
-- Continuous inegration and deployment (Markdown):
-  - [![en](doc/en.png) English](doc/continuous_deployment_en.md)
 - Upgrade Cmake to the lastest version (bash script)
   - [script](doc/install_latest_cmake.sh)
