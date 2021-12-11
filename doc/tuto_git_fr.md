@@ -17,9 +17,7 @@ trouver la documentation liée à la commande qui vous intéresse, il y a de
 nombreux documents sur internet comme
 https://perso.liris.cnrs.fr/pierre-antoine.champin/enseignement/intro-git/.
 
-## Notion de Git
-
-### Motivation pour versionner vos fichiers
+## Motivation pour versionner vos fichiers
 
 Dans un projet informatique, qu'il soit fait par une seule personne ou par un
 ensemble de personnes, on aime garder un historique de nos modifications
@@ -42,11 +40,11 @@ version comme SVN ou CVS de l'époque. Git fut rapidement adopté par la
 communauté des développeurs. SVN ou CVS ne doivent plus être utilisés car
 devenus totalement préhistoriques.
 
-### GitHub
+## Apercu de GitHub
 
-Des services apparurent comme GitHub, GitLab, bitbucket permettent d'héberger
-gratuitement vos projets publics ou privés. Du coup, ne confondez pas git (outil
-de version) avec GitHub un hébergeur pour des projets git. Un dépôt
+Des services apparurent comme GitHub, GitLab, Bitbucket permettant d'héberger
+gratuitement vos projets publics ou privés. Du coup, ne confondez pas git l'outil
+de version avec GitHub un hébergeur pour des projets git. Un dépôt
 (`repository`) est un répertoire caché nommé `.git` contenant toutes les données
 dont git a besoin pour gérer l'historique de vos modifications. Sauf cas
 rarissimes, vous ne modifierez jamais son contenu directement, mais uniquement
@@ -59,6 +57,55 @@ git, et ce, malgré son rachat par Microsoft qui a provoqué, à l'époque, des
 protestations de développeurs et des migrations de projet vers GitLab (comme
 Gtk+). GitHub permet de faire quelques commandes git pour vous dépanner mais il
 reste avant tout un service d'hébergement.
+
+### Organisation GitHub Stigmee
+
+La page l'organisation github de Stigmee est
+https://github.com/stigmee. Attention c'est une organisation privée avec des
+projets privés. Il faut y être invité pour pouvoir les voir. L'index vers les
+sous-parties de Stigmee est donné sur ce lien:
+https://github.com/stigmee/Welcome
+
+Quand vous cliquez sur un projet par exemple https://github.com/stigmee/front-godot
+vous verrez ce genre de page:
+
+![github](tuto_git_fr_07.png)
+
+- En haut, vous voyez *stigmee/front-godot* Stigmee est ici le nom de
+ l'organisation (en général c'est le pseudo d'une personne physique),
+ *front-godot* est le nom du dépôt git.
+
+- A droite, vous voyez le nombre de personnes qui observent les évolution de ce
+  projet, ainsi que le nombre de projets qui sont des clones du votre (pour
+  fournir des correctifs via un pull request) et ainsi que le nombre d'étoiles
+  (le nombre de fans qui aiment votre projet car GitHub proposant une page
+  spéciale affichant tous vos projets favoris).
+
+- En haut, un menu avec quelques onglets importants. Il faut cliquer dessus plus
+  pour afficher la page associée qui donner plus d'informations :
+  - `Issues` avec le nombre de tickets que des clients mécontents ont créés pour
+    signaler un problème. C'est à votre équipe de les analyser pour les accepter
+    ou les refuser.
+  - `Pull` requests avec le nombre de correctifs en attente que votre équipe ou
+    vos fans ont proposés. C'est à votre équipe de les analyser pour les accepter
+    ou les refuser. Les commits acceptés seront mis dans la branche désignée.
+  - `Actions` sont des automates que vous devez programmer afin de lancer des
+    actions automatiques (workflow) tels que lancer des tests de non régression,
+    de générer des releases, publier de la documentation ... en gros les taches
+    répétitives, difficiles, longues et ingrates à faire.
+   - `Projets` sont des post-its virtuels que les développeurs peuvent créer pour
+     se souvenir des tâches à faire.
+   - `Insight` contient un sous onglet qui affiche le nombres de vues sur votre
+     projet ainsi que le nombre de téléchargements par jour.
+
+- Au centre, le code source, vous pouvez vous baladez dans les répertoires et
+  les fichiers du projets. En haut à gauche, les différentes branches git du
+  projet. A droite en vert, le bouton pour télécharger votre projet.
+
+- A droite, des informations sur le projet: description textuelle, licence, les
+  releases à télécharger de votre projet et enfin les tags importants du projet.
+
+## Notion de git
 
 ### Commit
 
@@ -146,7 +193,7 @@ votre par défaut se nommera `origin` et le repo d'origine `upstream` (mis à
 jour). Ceci par exemple vous permet de travailler sur un `fork` d'un projet
 GitHub tout en traquant les modifications du projet d'origine.
 
-## Les outils importants
+## Les outils importants pour git
 
 Voici une liste d'outils git que j'utilise tous les jours: `git`, `gitk`,
 `git-cola`, `meld`, `emacs` (et son package magit.el). Ils s'installent via
@@ -170,17 +217,17 @@ vous). Une alternative à meld est `beyond compare` (mais sous licence payante).
 
 Sur la figure suivante, à droite et en vert, des lignes ajoutées. En bleue des
 lignes modifiées. Meld permet de remplacer des lignes désirées via la souris.
-Mon conseille, je place toujours à gauche le fichier de référence et à droite le
-fichier qui doit être modifié sans cette convention il est facile de se tromper
-sur qui est le fichier de référence à ne pas modifier (car meld indique les noms
-des fichiers mais le nom des dossiers sont masqués).
+Mon conseil : je place toujours à gauche le fichier de référence et à droite le
+fichier qui doit être modifié car sans cette convention il est facile de se
+tromper sur qui est le fichier de référence à ne pas modifier (car meld indique
+les noms des fichiers mais le nom des dossiers est masqué).
 
 ### Gitk
 
-`gitk` permet de voir l'historique de vos commits sur votre branche
-actuelle. `gitk --all` permet de voir l'historique de vos commits sur toutes les
-branches (locales et distantes). `gitk <filename>` permet de voir l'historique
-du seul fichier (et bon plus du repo).
+`gitk` permet de voir l'historique de vos commits sur votre branche actuelle
+locale et distante. `gitk --all` permet de voir l'historique de vos commits sur
+toutes les branches (locales et distantes). `gitk <filename>` permet de voir
+l'historique pour ce seul fichier.
 
 gitk est utile pour ajouter un tag sur un SHA1 particulier ou bien créer une
 branche locale (ou temporaire afin de ne pas perdre un ensemble de commits si
@@ -203,17 +250,23 @@ unique SHA1 `7fb29f070fc02adab998560504b5bf6a45b57cd5`. En vert (+) et rouge (-)
 le patch concernant l'unique fichier modifié README.md. En vert les lignes qui
 ont été ajoutées alors qu'en rouge les lignes qui ont été supprimées.
 
-### git-cola
+### Git Cola
 
-`git cola` vous évitera de taper à la console des commandes tel que `git add
-<filename>`, `git reset <filename>`, `git commit -m "message de commit"` et `git
-push`: il suffira de cliquer sur le nom des fichiers. git-cola permet aussi de
-commiter des portions de fichiers ce qui est utile pour faire plusieurs petits
-commits "atomiques" et donc avoir un contrôle plus fin sur vos
-modifications. Une fois les fichiers sélectionnés, vous pouvez les commiter sur
-votre branche git locale (cela correspond à la commande `git commit`). Il vous
-faudra avant Mettre un titre à votre commit ainsi qu'une description de vos
-modifications (afin d'aider vos collègues à comprendre votre commit).
+`git cola` (attention à la non présence du symbole `-` qui est uniquement
+utilisé avec la commande `apt-get` pour l'installer) vous évitera de taper à la
+console des commandes tel que `git add <filename>`, `git reset <filename>`, `git
+commit -m "message de commit"` et `git push`: il suffira de cliquer sur le nom
+des fichiers. git-cola permet aussi de commiter des portions de fichiers ce qui
+est utile pour faire plusieurs petits commits "atomiques" et donc avoir un
+contrôle plus fin sur vos modifications. Une fois les fichiers sélectionnés,
+vous pouvez les commiter sur votre branche git locale (cela correspond à la
+commande `git commit`). Il vous faudra avant mettre un titre à votre commit
+ainsi qu'une description de vos modifications (afin d'aider vos collègues à
+comprendre votre commit). Quand plusieurs commits ont été faits, vous pouvez les
+pousser sur la branche distante. Pour cela il faut cliquer sur le menu `Action`
+puis `Pousser`. Une fenêtre apparaîtra vous proposant de choisir le serveur et
+la branche locale/distante. Cliquez ensuite sur le bouton `Pousser` (une
+dernière fois madame).
 
 ![gitcola](tuto_git_fr_03.png)
 
@@ -318,9 +371,10 @@ vous faudra changer l'url de votre repo (donc git clonez avec la bonne option) :
 git clone git@github.com:stigmee/doc.git
 ```
 
-Ajoutez l'option `--recurse` si le repo contient des sous-modules.
+Ajoutez l'option `--recurse` si le repo contient des sous-modules. Ayez le
+réflexe immédiat de vous placer tout de suite dans la bonne branche !
 
-Cette commande est à faire une seule fois et à la condition que le dossier
+`git clonee` n'est à faire une seule fois et à la condition que le dossier
 n'existe pas là où vous avez décidé de le télécharger. Sinon, il suffit de
 mettre à jour votre repo afin de suivre les modifications de vos collègues
 (branches distantes). Faire :
