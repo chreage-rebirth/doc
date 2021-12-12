@@ -26,3 +26,6 @@ C'est pour cela que le réseau s'appelle STIGMEE.
 Notre Slogan: "Mind Beauty" d'après l'explorateur et Gentleman Extraordinaire
 (Conan Doyle a inventé le terme pour lui) Richard Francis Burton "Thy Thought to
 Thee an Empire Be": "fais de ta Pensée un Empire".
+
+Le premier mock-up du projet (qui s'appelait alors "Chréage) est ouvrable sous chrome ici en webgl
+http://chreage.befuse.com/content/WEBGL/ChreageAlpha0-3/index.html
