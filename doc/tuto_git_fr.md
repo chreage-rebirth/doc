@@ -453,7 +453,11 @@ Ou bien :
 git merge --no-ff dev-feature1
 ```
 
-La différence d'option est ![gitmerge](https://webdevdesigner.com/images/content/9069061/66cbfdbf8a05fd1bae8b88159da7974e.png).
+La différence d'option est que le graphe des commits créé ou non une
+bloucle. C'est selon les goûts de chacun et si git peut merger sans faire de
+conflit.
+
+![gitmerge](https://webdevdesigner.com/images/content/9069061/66cbfdbf8a05fd1bae8b88159da7974e.png).
 
 ## Modifier votre code, branche locale et branche distante
 
@@ -575,7 +579,7 @@ projet parent pour éventuellement proposer d'autres pull request:
 git remote add upstream URL
 ```
 
-Où `URL` est l'url du projet parent GitHub et `upstream` à remplacer par le nom
+Où `URL` est l'URL du projet parent GitHub et `upstream` à remplacer par le nom
 désiré du repo parent.
 
 ```
