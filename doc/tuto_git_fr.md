@@ -586,3 +586,74 @@ désiré du repo parent.
 git remote -v
 git fetch --all
 ```
+
+## Travailler sur plusieurs repo git
+
+Stigmee est un gros projet, il contient plein de repos GitHub. Gérer une dizaine
+de repo à la main peut commencer à devenir pénible car il faut de temps en temps
+les mettre à jour, des nouveaux repos peuvent se créer ou être supprimés, il
+faut savoir quelles branches il faut utiliser, etc. Cela commence à faire
+beaucoup de commandes à taper. Des projets comme Android contiennent des
+centaines de repos et c'est pourquoi Google a créé un outil pour gérer tous
+leurs repos via un (ou plusieurs) fichier XML avec peu de commandes à taper. Par
+exemple pour Stigmee ce
+[fichier](https://github.com/stigmee/stigmee/blob/master/default.xml). Par
+exemple (non contractuel) :
+
+```
+<manifest>
+    <remote name="github-public" fetch="git://github.com"/>
+    <remote name="github-private" fetch="ssh://git@github.com"/>
+    <default revision="main" remote="github-private" sync-j="8"/>
+
+    <project name="stigmee/stigmee.git" remote="github-private" path="welcome" revision="master" />
+    <project name="stigmee/doc.git" remote="github-private" path="doc" />
+    <project name="stigmee/front-godot.git" remote="github-private" path="front-godot" />
+    <project name="stigmee/godot-modules.git" remote="github-private" path="godot-modules" />
+    <project name="stigmee/stigmark-rocket-rs" remote="github-private" path="stigmark-rocket-rs" />
+    <project name="stigmee/stigmee-beebots" remote="github-private" path="beebots" />
+    <project name="stigmee/dance_bee_tab" remote="github-private" path="dance_bee_tab" />
+    <project name="stigmee/bookmarkSample" remote="github-private" path="bookmark_sample" />
+</manifest>
+```
+
+Quelques explications. `project name=` indique le repo GitHub, `path=` le nom du
+dossier quand il aura été téléchargé, `revision=` est le nom de la branche, tag
+ou du SHA1. `default revision="main"` indique que si la branche n'est pas
+indiquée c'est la branche main qui sera prise. `sync-j="8"` indique le nombre de
+threads utiliser pour cloner.
+
+Ce
+[document](http://www.yoannsculo.fr/git-repo-outil-gestion-multiples-repositories-arracher-cheveux/)
+explique plus en détail les commandes.  Mais pour nous, trois sont
+importantes. Les deux premières sont à taper la première fois pour récupérer
+tous les repos (à taper dans le dossier qui servira de dossier racine; donc à ne
+pas taper depuis votre dossier home). La première commande permet de créer un
+dossier `.repo` contenant le fichier XML. La deuxième commande permet de se
+mettre à jour. La première fois (quand le dossier parent est vide) elle met à
+jour
+
+```
+repo init -u git@github.com:stigmee/stigmee.git
+repo sync
+```
+
+Avant de faire `repo sync` ou vérifier que vous n'avez pas oublier de pousser
+tous vos commits sur GitHub, il faut taper :
+
+```
+repo status
+```
+
+**Remarque importante: ** Si vous faites un `git status` dans un des repo
+GitHub, vous verrez que vous n'êtes pas sur une branche:
+
+```
+git status
+Actuellement sur aucun branche.
+```
+
+**IL FAUT ABSOLUMENT TRAVAILLER SUR UNE DES BRANCHES !!** il faut faire par
+exemple: `git checkout main` pour se placer sur la branche main (ou tout autre
+branche désirée). Comme beaucoup de chose les ingé chez Google ont de bonnes
+idées mais font des outils mal conçus (comme ça c'est dit).
