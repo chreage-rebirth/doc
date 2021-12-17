@@ -199,19 +199,22 @@ Voici une liste d'outils git que j'utilise tous les jours: `git`, `gitk`,
 `git-cola`, `meld`, `emacs` (et son package magit.el). Ils s'installent via
 `apt-get install` pour Linux, `homebrew` pour Mac OS X. gitk est directement
 inclus avec git. Pour le package Emacs il vous faudra utiliser le serveur
-MELPA. Vous pouvez évidement utiliser d'autres outils tel que git-gui, gitamine,
-kraken ...
+MELPA. Vous pouvez évidement utiliser d'autres outils tel que
+[git-gui](http://codeur-pro.fr/git-gui-guide-complet/),
+[gitamine](https://github.com/pvigier/gitamine),
+[Kraken](https://www.gitkraken.com/), ...
 
 ### Meld
 
-`meld` n'est pas un outil git, mais il permet de comparer deux ou trois fichiers
-et de les fusionner. Il permet aussi de comparer deux dossiers (récursion sur
-les fichiers modifiés) mais aussi sur vos modifications git en cours (par
-rapport au dernier commit). meld permettra surtout de résoudre des conflits de
-merge (par exemple si vous étiez en train de modifier un fichier code source
-pour ajouter de nouvelles fonctions alors qu'un de vos collègues vient de
-commiter des modifications sur ce fichier et dans la même fonction que
-vous). Une alternative à meld est `beyond compare` (mais sous licence payante).
+[meld](https://meldmerge.org/) n'est pas un outil git, mais il permet de
+comparer deux ou trois fichiers et de les fusionner. Il permet aussi de comparer
+deux dossiers (récursion sur les fichiers modifiés) mais aussi sur vos
+modifications git en cours (par rapport au dernier commit). meld permettra
+surtout de résoudre des conflits de merge (par exemple si vous étiez en train de
+modifier un fichier code source pour ajouter de nouvelles fonctions alors qu'un
+de vos collègues vient de commiter des modifications sur ce fichier et dans la
+même fonction que vous). Une alternative à meld est [beyond
+compare](https://www.scootersoftware.com/) (mais sous licence payante).
 
 ![meld](tuto_git_fr_02.png)
 
@@ -224,10 +227,10 @@ les noms des fichiers mais le nom des dossiers est masqué).
 
 ### Gitk
 
-`gitk` permet de voir l'historique de vos commits sur votre branche actuelle
-locale et distante. `gitk --all` permet de voir l'historique de vos commits sur
-toutes les branches (locales et distantes). `gitk <filename>` permet de voir
-l'historique pour ce seul fichier.
+[gitk](https://www.atlassian.com/git/tutorials/gitk) permet de voir l'historique
+de vos commits sur votre branche actuelle locale et distante. `gitk --all`
+permet de voir l'historique de vos commits sur toutes les branches (locales et
+distantes). `gitk <filename>` permet de voir l'historique pour ce seul fichier.
 
 gitk est utile pour ajouter un tag sur un SHA1 particulier ou bien créer une
 branche locale (ou temporaire afin de ne pas perdre un ensemble de commits si
@@ -252,21 +255,21 @@ ont été ajoutées alors qu'en rouge les lignes qui ont été supprimées.
 
 ### Git Cola
 
-`git cola` (attention à la non présence du symbole `-` qui est uniquement
-utilisé avec la commande `apt-get` pour l'installer) vous évitera de taper à la
-console des commandes tel que `git add <filename>`, `git reset <filename>`, `git
-commit -m "message de commit"` et `git push`: il suffira de cliquer sur le nom
-des fichiers. git-cola permet aussi de commiter des portions de fichiers ce qui
-est utile pour faire plusieurs petits commits "atomiques" et donc avoir un
-contrôle plus fin sur vos modifications. Une fois les fichiers sélectionnés,
-vous pouvez les commiter sur votre branche git locale (cela correspond à la
-commande `git commit`). Il vous faudra avant mettre un titre à votre commit
-ainsi qu'une description de vos modifications (afin d'aider vos collègues à
-comprendre votre commit). Quand plusieurs commits ont été faits, vous pouvez les
-pousser sur la branche distante. Pour cela il faut cliquer sur le menu `Action`
-puis `Pousser`. Une fenêtre apparaîtra vous proposant de choisir le serveur et
-la branche locale/distante. Cliquez ensuite sur le bouton `Pousser` (une
-dernière fois madame).
+[git cola](https://git-cola.github.io/) (attention à la non présence du symbole
+`-` qui est uniquement utilisé avec la commande `apt-get` pour l'installer) vous
+évitera de taper à la console des commandes tel que `git add <filename>`, `git
+reset <filename>`, `git commit -m "message de commit"` et `git push`: il suffira
+de cliquer sur le nom des fichiers. git-cola permet aussi de commiter des
+portions de fichiers ce qui est utile pour faire plusieurs petits commits
+"atomiques" et donc avoir un contrôle plus fin sur vos modifications. Une fois
+les fichiers sélectionnés, vous pouvez les commiter sur votre branche git locale
+(cela correspond à la commande `git commit`). Il vous faudra avant mettre un
+titre à votre commit ainsi qu'une description de vos modifications (afin d'aider
+vos collègues à comprendre votre commit). Quand plusieurs commits ont été faits,
+vous pouvez les pousser sur la branche distante. Pour cela il faut cliquer sur
+le menu `Action` puis `Pousser`. Une fenêtre apparaîtra vous proposant de
+choisir le serveur et la branche locale/distante. Cliquez ensuite sur le bouton
+`Pousser` (une dernière fois madame).
 
 ![gitcola](tuto_git_fr_03.png)
 
@@ -276,7 +279,8 @@ droite, les fichiers ajoutés (add) et prêts pour le git commit (via le bouton)
 
 Si vous cliquez sur le bouton *commiter* et que vous avez réalisé que votre
 commit contenait une erreur. Vous pouvez corriger votre dernier commit local via
-`git cola --amend`. Une alternative à git cola est `git-gui` mais il est moins
+`git cola --amend`. Une alternative à git cola est
+[git-gui](http://codeur-pro.fr/git-gui-guide-complet/) mais il est moins
 pratique. git-cola permet aussi de commiter toutes vos commits locaux sur la
 branche distante. Personnellement, je n'utilise plus que cet outil et ne tape
 plus aucune commande dans la console.
@@ -287,9 +291,9 @@ Si vous voulez modifier des commits plus anciens sur votre branche locale
 (supposons ici le 5ème en partant du dernier commit `HEAD~5`), git-cola ne
 pourra pas vous aider (à ma connaissance) du coup taper dans la console `git
 rebase -i HEAD~5` sera nécessaire. Cette commande ouvrira, dans mon cas, Emacs
-qui, lui, appellera son package magit. Je suis tellement fan de magit que je ne
-sais pas utiliser un autre outil. Par exemple, dans la figure suivante, je veux
-retravailler sur les 5 derniers commits locaux.
+qui, lui, appellera son package [magit](https://magit.vc/). Je suis tellement
+fan de magit que je ne sais pas utiliser un autre outil. Par exemple, dans la
+figure suivante, je veux retravailler sur les 5 derniers commits locaux.
 
 ![magit](tuto_git_fr_04.png)
 
@@ -298,6 +302,16 @@ me propose d'éditer mes commits en sélectionnant une action sur chaque ligne
 référant à un commit. Les actions sont: -- ne rien faire, -- retravailler un
 commit, -- changer un titre et description, -- fusionner ou changer l'ordre des
 commits dans l'historique. Nous y reviendrons plus tard.
+
+### GitHub Desktop
+
+[GitHub Desktop](https://desktop.github.com/) est un outil que je ne connais pas
+mais qui semble regrouper les outils cités plus haut dans une seule interface
+(mais en probablement moins souple). Une alternative est
+[Kraken](https://www.gitkraken.com/).
+
+Note pour l'installer sur Linux: [voir ce
+lien](https://gist.github.com/berkorbay/6feda478a00b0432d13f1fc0a50467f1)
 
 ## Configuration de votre environnement de travail
 
