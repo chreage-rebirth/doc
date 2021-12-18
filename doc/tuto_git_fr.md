@@ -645,15 +645,33 @@ tous vos commits sur GitHub, il faut taper :
 repo status
 ```
 
-**Remarque importante: ** Si vous faites un `git status` dans un des repo
-GitHub, vous verrez que vous n'êtes pas sur une branche:
+**Remarque importante:** Si vous faites un `git status` dans un des repo GitHub,
+vous verrez que vous n'êtes pas sur une branche mais détaché (detached HEAD):
 
 ```
 git status
 Actuellement sur aucun branche.
 ```
 
-**IL FAUT ABSOLUMENT TRAVAILLER SUR UNE DES BRANCHES !!** il faut faire par
-exemple: `git checkout main` pour se placer sur la branche main (ou tout autre
-branche désirée). Comme beaucoup de chose les ingé chez Google ont de bonnes
-idées mais font des outils mal conçus (comme ça c'est dit).
+**IL FAUT ABSOLUMENT TRAVAILLER SUR UNE DE NOS BRANCHES !!** car il y a un
+énorme risque que vous perdiez vos modifications. Il faut donc faire le plus
+vite possible `git checkout main` pour se placer sur la branche main (ou toute
+autre branche désirée). Ce détachement viendrait de la commande `git checkout`
+sur un SHA1 (au lieu du nom de la branche comme on l'a vu précédemment).
+
+De plus, pour plus de confusion, repo créé des remotes comme par exemple
+`remotes/m/master` qui va pointer sur la branche qui a été spécifiée dans le
+fichier manifest.
+
+```
+cd godot-modules/
+git branch -a
+* (no branch)
+  remotes/github-private/dev-lecrapouille
+  remotes/github-private/main
+  remotes/m/master -> github-private/main
+```
+
+Pour nos branches sur le projet `godot-modules` il faut faire:
+- `git checkout main` pour `remotes/github-private/main`.
+- `git checkout dev-lecrapouille` pour `remotes/github-private/dev-lecrapouille`.
