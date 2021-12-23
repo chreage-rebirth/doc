@@ -1,16 +1,24 @@
 # Ajouter un module Chromium Embedded Framework à Godot
 
+**Attention:** Cette procédure fonctionne ([single
+executable](tuto_fun_cef.md#understanding-how-cef-starts-its-sub-processes)) et
+est valide mais elle nécessite de modifier le code source de Godot et de le
+recompiler. Une autre procédure non décrite ici sera préférable (Separate
+Sub-Process Executable) car ne demande pas de modifier Godot (voir ici son
+implementation https://github.com/stigmee/godot-modules/tree/dev-lecrapouille).
+
 Comment modifier les sources de Godot version 3.4-stable (à voir pour Godot
 V4-instable) pour ajouter un nouveau type de nœud pour le graphe de scène (aussi
 nommé scene graph ou scene tree) afin de faire un nœud pour
-[CEF](https://bitbucket.org/chromiumembedded/cef/src/master/). Pour ceux qui
+[CEF](https://bitbucket.org/chromiumembedded/cef/src/master/) ? Pour ceux qui
 veulent savoir comment fonctionne un graphe de scène voir ce
 [lien](https://research.ncl.ac.uk/game/mastersdegree/graphicsforgames/) et
 sélectionner l'article Scene Graphs.
 
-Pour le moment, c'est pour savoir si c'est réalisable. Dans un deuxième temps,
-il sera nécessaire de faire un point d'architecture pour voir comment ce nœud
-pourra servir pour le fonctionnement de Stigmee.
+Pour le moment, cette page explique comment c'est réalisable. Dans un deuxième
+temps, il sera nécessaire de faire un point d'architecture pour voir comment ce
+module pourra servir pour le fonctionnement de Stigmee et de quel classe Godot
+il doit hériter, son API pour une utilisation dans un GDScript.
 
 Les sources de Godot sont ici :
 [https://github.com/godotengine/godot](https://github.com/godotengine/godot). La
@@ -18,11 +26,10 @@ définition de la classe mère d'un nœud graphe de scène est ici :
 [https://github.com/godotengine/godot/tree/master/scene/main](https://github.com/godotengine/godot/tree/master/scene/main). Par
 exemple le nœud HTTP Request dont la doc est décrite sur ce
 [lien](https://docs.godotengine.org/fr/stable/tutorials/networking/http_request_class.html)
-son [code
+(son [code
 source](https://github.com/godotengine/godot/blob/master/scene/main/http_request.cpp)
 et son
-[header](https://github.com/godotengine/godot/blob/master/scene/main/http_request.h).
-
+[header](https://github.com/godotengine/godot/blob/master/scene/main/http_request.h)).
 On pourrait penser à ajouter nos fichiers dans ce répertoire pour créer notre
 propre nœud, mais le plus simple est de suivre est de suivre la procédure
 décrite ici :
@@ -38,10 +45,12 @@ git clone git@github.com:godotengine/godot.git --depth=1 --branch 3.4-dev
 
 ## Télécharger Chromium Embedded Framework
 
-Tout d'abord je télécharge une CEF déjà compilé (car c'est une plaie à compiler):
-https://cef-builds.spotifycdn.com/index.html
+Tout d'abord je télécharge une CEF déjà compilé (car c'est une plaie à
+compiler): https://cef-builds.spotifycdn.com/index.html et je décompresse
+l'archive à l'endroit de mon choix. Je le place dans `godot/thirdparty/`
 
-Et je décompresse l'archive à l'endroit de mon choix. Je le place dans `godot/thirdparty/`
+Pour plus d'information, lire ce [document](tuto_fun_cef.md) qui explique les
+entrailles de CEF, comment le compiler, etc.
 
 ## Créer son module Godot v3.4-stable
 
@@ -49,10 +58,10 @@ Il faut créer un dossier que l'on nommera, par exemple, `cef` dans le dossier
 `godot/modules`. On prendra soin d'éviter de créer des conflits de noms entre
 votre module est celui de CEF.
 
-Il vous faudra au minimum, les fichiers suivants (Le nom des fichiers
-`proxy_cef.cpp` et `proxy_cef.h` est laissé libre) :
-- proxy_cef.cpp
-- proxy_cef.h
+Il vous faudra au minimum, les fichiers suivants (seul le nom pour les fichiers
+`browser.cpp` et `browser.h` est laissé libre) :
+- browser.cpp
+- browser.h
 - register_types.cpp
 - register_types.h
 - SCsub
@@ -60,13 +69,13 @@ Il vous faudra au minimum, les fichiers suivants (Le nom des fichiers
 
 **Fichier register_types.h**
 
-Il faut ajouter ces deux fonctions afin que notre future classe C++ `ProxyCEF`
-pour notre module doit être enregistrée par Godot. Le terme `cef` doit référer
+Il faut ajouter ces deux fonctions afin que notre future classe C++ `BrowserView`
+pour notre module puisse être enregistrée par Godot. Le terme `cef` doit référer
 au nom de votre dossier.
 
 ```C++
 #ifndef STIGMEE_CEF_REGISTER_TYPES_H
-#define STIGMEE_CEF_REGISTER_TYPES_H
+#  define STIGMEE_CEF_REGISTER_TYPES_H
 
 void register_cef_types();
 void unregister_cef_types();
@@ -79,11 +88,11 @@ void unregister_cef_types();
 ```C++
 #include "register_types.h" // Godot
 #include "core/class_db.h" // Godot
-#include "proxy_cef.h" // Notre module
+#include "browser.h" // Notre module
 
 void register_cef_types()
 {
-   ClassDB::register_class<ProxyCEF>();
+   ClassDB::register_class<BrowserView>();
 }
 
 void unregister_cef_types()
@@ -92,8 +101,9 @@ void unregister_cef_types()
 
 **Fichier config.py**
 
-C'est un fichier de configuration du module, c'est un simple script python. Le
-code minimal est:
+C'est un fichier de configuration du module (documentation par exemple), c'est
+un simple script python. Le code minimal est:
+
 ```
 def can_build(env, platform):
     return True
@@ -102,71 +112,61 @@ def configure(env):
     pass
 ```
 
-**Fichier proxy_cef.h**
+**Fichier browser.h**
 
-Pour le moment, c'est une classe vide qui ne fait rien avec CEF mais qui vient de
-https://github.com/Lecrapouille/OffScreenCEF. Les explications du code sont
-[ici](https://github.com/stigmee/doc/blob/master/doc/tuto_fun_cef.md).
-Pour le moment elle se contente d'utiliser des symboles de CEF. Le fichier header
-contient notre classe proxy CEF. Notre classe hérite de Godot soit d'un nœud,
-soit d'une référence, soit d'une ressource.
+C'est une classe qui vient de
+https://github.com/Lecrapouille/OffScreenCEF/tree/master/cefsimple_opengl (qui
+lui meme vient de l'exemple cefsimple donné dans les sources de CEF). Les
+explications sont données
+[ici](https://github.com/stigmee/doc/blob/master/doc/tuto_fun_cef.md). Notre
+classe peut hériter d'une classe Godot comme par exemple soit d'un nœud, soit
+d'une référence, soit d'une ressource, voir d'une texture. Il est 'a noter que
+ni Godot ni CEF n'ont de namespace.
 
 ```C++
 #ifndef STIGMEE_CEF_H
-#define STIGMEE_CEF_H
+#  define STIGMEE_CEF_H
 
 // Godot
-#include "scene/main/node.h"
+#  include "scene/main/node.h"
 
 // Chromium Embedded Framework
 #  include <cef_render_handler.h>
 #  include <cef_client.h>
 #  include <cef_app.h>
 
-class ProxyCEF : public Node
+class BrowserView: public Node
 {
-private:
-
-    GDCLASS(ProxyCEF, Node);
-
 protected:
 
+    // Godot: mandatory. Export symbols for GDScript
     static void _bind_methods();
 
 public:
 
-    //! \brief Default Constructor using a given URL.
-    ProxyCEF();
+    // Godot: mandatory
+    GDCLASS(BrowserView, Node);
 
-    //! \brief
-    ~ProxyCEF();
+    //! \brief Default constructor. Load Google page.
+    BrowserView();
+
+    //! \brief Default destructor.
+    ~BrowserView();
+
+    //! \brief Return the Godot texture
+    Ref<ImageTexture> get_texture() { return m_texture; }
 
     //! \brief Load the given web page
-    void load(const std::string &url);
-
-    //! \brief Render the web page
-    void draw();
+    void load_url(const String &url);
 
     //! \brief Set the windows size
     void reshape(int w, int h);
 
-    //! \brief Set the viewport
-    bool viewport(float x, float y, float w, float h);
-
-    //! \brief Get the viewport
-    //inline glm::vec4 const& viewport() const
-    //{
-    //    return m_viewport;
-    //}
-
-    //! \brief TODO
-    // void executeJS(const std::string &cmd);
-
-    //! \brief Set the new mouse position
+    //! \brief Set the new mouse position.
     void mouseMove(int x, int y);
 
     //! \brief Set the new mouse state (clicked ...)
-    void mouseClick(CefBrowserHost::MouseButtonType btn, bool mouse_up);
+    void mouseClick(int button, bool mouse_up);
 
     //! \brief Set the new keyboard state (char typed ...)
     void keyPress(int key, bool pressed);
@@ -180,30 +180,15 @@ private:
     {
     public:
 
-        //! \brief
-        ~RenderHandler();
+        RenderHandler(BrowserView& owner);
 
-        //! \brief Compile OpenGL shaders and create OpenGL objects (VAO,
-        //! VBO, texture, locations ...)
-        bool init();
-
-        //! \brief Render OpenGL VAO (rotating a textured square)
-        void draw();
-
-        //! \brief Resize the view
+        //! \brief Resize the browser's view
         void reshape(int w, int h);
 
-        //! \brief Return the OpenGL texture handle
-        int texture() const
-        {
-            return 0;
-        }
-
-        //! \brief CefRenderHandler interface
+        //! \brief CefRenderHandler interface. Get the view port.
         virtual void GetViewRect(CefRefPtr<CefBrowser> browser, CefRect &rect) override;
 
-        //! \brief CefRenderHandler interface
-        //! Update the OpenGL texture.
+        //! \brief CefRenderHandler interface. Update the Godot's texture.
         virtual void OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type,
                              const RectList &dirtyRects, const void *buffer,
                              int width, int height) override;
@@ -213,9 +198,15 @@ private:
 
     private:
 
-        //! \brief Dimension
+        //! \brief Browser's view dimension
         int m_width;
         int m_height;
+
+        //! \brief Access to BrowserView::m_image
+        BrowserView& m_owner;
+
+        //! \brief
+        PoolVector<uint8_t> m_data;
     };
 
     // *************************************************************************
@@ -230,6 +221,7 @@ private:
             : m_renderHandler(ptr)
         {}
 
+        // CefClient
         virtual CefRefPtr<CefRenderHandler> GetRenderHandler() override
         {
             return m_renderHandler;
@@ -242,120 +234,74 @@ private:
 
 private:
 
-    //! \brief Mouse cursor position on the OpenGL window
-    int m_mouse_x;
-    int m_mouse_y;
-
-    //! \brief Chromium Embedded framework elements
+    //! \brief Chromium Embedded Framework elements
     CefRefPtr<CefBrowser> m_browser;
     CefRefPtr<BrowserClient> m_client;
     RenderHandler* m_render_handler = nullptr;
 
-    //! \brief OpenGL has created GPU elements with success
-    bool m_initialized = false;
+    //! \brief Mouse cursor position on the main window
+    int m_mouse_x;
+    int m_mouse_y;
 
-public:
-
-    //! \brief If set to false then the web page is turning.
-    bool m_fixed = true;
+    //! \brief Godot's temporary image (CEF => Godot)
+    Ref<ImageTexture> m_texture;
+    Ref<Image> m_image;
 };
 
 #endif // STIGMEE_CEF_H
 ```
 
-**Fichier proxy_cef.cpp**
+**Fichier browser.cpp**
+
+- `_bind_methods()` permet d'exporter les méthodes pour une utilisation dans les
+  scripts Godot.
+- `get_texture()` retourne un pointeur sur la texture Godot ou est affichée la
+  page web.
+- `onPaint` est la callback de CEF quand un morceau de la page doit être
+  affichée.
+- CEF a besoin qu'on lui donne des informations tels que la taille de la page
+  web (`reshape`), la position de la souris (`MouseClick`), les touches du
+  clavier, etc.
+- CEF propose d'autres API comme la page précédente, la suivante, zoom, non
+  données ici.
 
 ```C++
-#include "proxy_cef.h"
-#include <iostream>
-
 //------------------------------------------------------------------------------
-void ProxyCEF::_bind_methods()
+void BrowserView::_bind_methods()
 {
-    //ClassDB::bind_method(D_METHOD("do_action", "value"), &ProxyCEF::do_action);
+    ClassDB::bind_method(D_METHOD("load_url", "url"), &BrowserView::load_url);
+    ClassDB::bind_method(D_METHOD("get_texture"), &BrowserView::get_texture);
+    ClassDB::bind_method(D_METHOD("reshape", "w", "h"), &BrowserView::reshape);
+    ClassDB::bind_method(D_METHOD("on_key_pressed", "key", "pressed"), &BrowserView::keyPress);
+    ClassDB::bind_method(D_METHOD("on_mouse_moved", "x", "y"), &BrowserView::mouseMove);
+    ClassDB::bind_method(D_METHOD("on_mouse_click", "buton", "up"), &BrowserView::mouseClick);
 }
 
 //------------------------------------------------------------------------------
-ProxyCEF::RenderHandler::~RenderHandler()
-{}
-
-//------------------------------------------------------------------------------
-bool ProxyCEF::RenderHandler::init()
-{
-    return true;
-}
-
-//------------------------------------------------------------------------------
-void ProxyCEF::RenderHandler::draw()
-{
-}
-
-//------------------------------------------------------------------------------
-void ProxyCEF::RenderHandler::reshape(int w, int h)
-{
-    m_width = w;
-    m_height = h;
-}
-
-//------------------------------------------------------------------------------
-bool ProxyCEF::viewport(float x, float y, float w, float h)
-{
-    if (!(x >= 0.0f) && (x < 1.0f))
-        return false;
-
-    if (!(x >= 0.0f) && (y < 1.0f))
-        return false;
-
-    if (!(w > 0.0f) && (w <= 1.0f))
-        return false;
-
-    if (!(h > 0.0f) && (h <= 1.0f))
-        return false;
-
-    if (x + w > 1.0f)
-        return false;
-
-    if (y + h > 1.0f)
-        return false;
-
-    return true;
-}
-
-//------------------------------------------------------------------------------
-void ProxyCEF::RenderHandler::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect &rect)
-{
-    rect = CefRect(0, 0, m_width, m_height);
-}
-
-//------------------------------------------------------------------------------
-void ProxyCEF::RenderHandler::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type,
-                            const RectList &dirtyRects, const void *buffer,
-                            int width, int height)
-{
-}
-
-//------------------------------------------------------------------------------
-ProxyCEF::ProxyCEF()
+BrowserView::BrowserView()
     : m_mouse_x(0), m_mouse_y(0)
 {
+    std::cout << "BrowserView::BrowserView()" << std::endl;
+    m_image.instance();
+    m_texture.instance();
+
     CefWindowInfo window_info;
     window_info.SetAsWindowless(0);
 
-    m_render_handler = new RenderHandler();
-    m_initialized = m_render_handler->init();
-    m_render_handler->reshape(128, 128); // initial size
+    m_render_handler = new RenderHandler(*this);
+    m_render_handler->reshape(128, 128); // initial browser's view size
 
-    CefBrowserSettings browserSettings;
-    browserSettings.windowless_frame_rate = 60; // 30 is default
+    CefBrowserSettings settings;
+    settings.windowless_frame_rate = 60; // 30 is default
 
     m_client = new BrowserClient(m_render_handler);
     m_browser = CefBrowserHost::CreateBrowserSync(window_info, m_client.get(),
-                                                  ""/*url*/, browserSettings,
+                                                  "https://www.google.com/", settings,
                                                   nullptr, nullptr);
 }
 
 //------------------------------------------------------------------------------
-ProxyCEF::~ProxyCEF()
+BrowserView::~BrowserView()
 {
     CefDoMessageLoopWork();
     m_browser->GetHost()->CloseBrowser(true);
@@ -365,28 +311,69 @@ ProxyCEF::~ProxyCEF()
 }
 
 //------------------------------------------------------------------------------
-void ProxyCEF::load(const std::string &url)
+BrowserView::RenderHandler::RenderHandler(BrowserView& owner)
+    : m_owner(owner)
+{}
+
+//------------------------------------------------------------------------------
+void BrowserView::RenderHandler::reshape(int w, int h)
 {
-    assert(m_initialized);
-    m_browser->GetMainFrame()->LoadURL("");
+    m_width = w;
+    m_height = h;
 }
 
 //------------------------------------------------------------------------------
-void ProxyCEF::draw()
+void BrowserView::RenderHandler::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect &rect)
 {
-    CefDoMessageLoopWork();
-    m_render_handler->draw();
+    rect = CefRect(0, 0, m_width, m_height);
 }
 
 //------------------------------------------------------------------------------
-void ProxyCEF::reshape(int w, int h)
+// FIXME find a less naive algorithm
+void BrowserView::RenderHandler::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type,
+                                         const RectList &dirtyRects, const void *buffer,
+                                         int width, int height)
+{
+    // Sanity check
+    if ((width <= 0) || (height <= 0) || (buffer == nullptr))
+        return ;
+
+    // BGRA8: blue, green, red components each coded as byte
+    int const COLOR_CHANELS = 4;
+    int const SIZEOF_COLOR = COLOR_CHANELS * sizeof(char);
+    int const TEXTURE_SIZE = SIZEOF_COLOR * width * height;
+
+    // Copy CEF image buffer to Godot PoolVector
+    m_data.resize(TEXTURE_SIZE);
+    PoolVector<uint8_t>::Write w = m_data.write();
+    memcpy(&w[0], buffer, TEXTURE_SIZE);
+
+    // Color conversion BGRA8 -> RGBA8: swap B and R chanels
+    for (int i = 0; i < TEXTURE_SIZE; i += COLOR_CHANELS)
+    {
+        std::swap(w[i], w[i + 2]);
+    }
+
+    // Copy Godot PoolVector to Godot texture.
+    m_owner.m_image->create(width, height, false, Image::FORMAT_RGBA8, m_data);
+    m_owner.m_texture->create_from_image(m_owner.m_image, Texture::FLAG_VIDEO_SURFACE);
+}
+
+//------------------------------------------------------------------------------
+void BrowserView::load_url(const String &url)
+{
+    m_browser->GetMainFrame()->LoadURL(url.utf8().get_data());
+}
+
+//------------------------------------------------------------------------------
+void BrowserView::reshape(int w, int h)
 {
     m_render_handler->reshape(w, h);
     m_browser->GetHost()->WasResized();
 }
 
 //------------------------------------------------------------------------------
-void ProxyCEF::mouseMove(int x, int y)
+void BrowserView::mouseMove(int x, int y)
 {
     m_mouse_x = x;
     m_mouse_y = y;
@@ -400,18 +387,37 @@ void ProxyCEF::mouseMove(int x, int y)
 }
 
 //------------------------------------------------------------------------------
-void ProxyCEF::mouseClick(CefBrowserHost::MouseButtonType btn, bool mouse_up)
+void BrowserView::mouseClick(int button, bool mouse_up)
 {
     CefMouseEvent evt;
     evt.x = m_mouse_x;
     evt.y = m_mouse_y;
+
+    CefBrowserHost::MouseButtonType btn;
+    switch (button)
+    {
+        case BUTTON_LEFT:
+          btn = CefBrowserHost::MouseButtonType::MBT_LEFT;
+          std::cout << "BrowserView::mouseClick Left " << mouse_up << std::endl;
+          break;
+        case BUTTON_RIGHT:
+          btn = CefBrowserHost::MouseButtonType::MBT_RIGHT;
+          std::cout << "BrowserView::mouseClick Right " << mouse_up << std::endl;
+          break;
+        case BUTTON_MIDDLE:
+          btn = CefBrowserHost::MouseButtonType::MBT_MIDDLE;
+          std::cout << "BrowserView::mouseClick Middle " << mouse_up << std::endl;
+          break;
+        default:
+          return;
+    }
 
     int click_count = 1; // TODO
     m_browser->GetHost()->SendMouseClickEvent(evt, btn, mouse_up, click_count);
 }
 
 //------------------------------------------------------------------------------
-void ProxyCEF::keyPress(int key, bool pressed)
+void BrowserView::keyPress(int key, bool pressed)
 {
     CefKeyEvent evt;
     evt.character = key;
@@ -441,6 +447,8 @@ env.Append(CPPPATH = ['#thirdparty/cef_binary/include/wrapper'])
 env.Append(LIBS = 'cef', LIBPATH = ['#main'])
 env.Append(LIBS = 'libcef_dll_wrapper', LIBPATH = ['#main'])
 env.add_source_files(env.modules_sources, "*.cpp")
+env.Append(CXXFLAGS=['-DCEF_USE_SANDBOX', '-DNDEBUG', '-D_FILE_OFFSET_BITS=64',
+                         '-D__STDC_CONSTANT_MACROS', '-D__STDC_FORMAT_MACROS'])
 ```
 
 Documentation Scons:
@@ -449,13 +457,16 @@ Documentation Scons:
 
 ## Modification du main de Godot v3.4-stable
 
-On doit lancer CEF. Celui-ci a besoin du `argc` et `argv` de la fonction `main`.
-CEF ajoute des informations à ses processus forkés. Ceci impacte Godot qui lui aussi
-à besoin du `argc` et `argv` pour lancer son éditeur 3D. On doit en faire des copies.
-Si on ne reseigne pas `argc` et `argv` à CEF celui-ci peut partir en boucle infinie
-en lançant des forks et tuer votre système d'exploitation.
+On doit lancer CEF. Celui-ci a besoin du `argc` et `argv` de la fonction `main`
+(command line). CEF y ajoute des informations à ses processus forkés en la
+modifiant. Ceci impacte Godot qui lui aussi à besoin du `argc` et `argv` pour
+lancer son éditeur 3D. On doit donc faire des copies de la command line.  Si on
+ne renseigne pas `argc` et `argv` à CEF celui-ci peut partir en boucle infinie en
+lançant des forks et tuer en quelques secondes votre système d'exploitation.
 
-Modifions le fichier `godot/platform/x11/godot_x11.cpp` :
+Modifions le fichier `godot/platform/x11/godot_x11.cpp`. Il faut ajouter les
+fonctions `CEFsetUp` et :
+
 ```C++
 // Chromium Embedded Framework
 #  include <cef_render_handler.h>
@@ -466,85 +477,113 @@ Modifions le fichier `godot/platform/x11/godot_x11.cpp` :
 //------------------------------------------------------------------------------
 static void CEFsetUp(int argc, char** argv)
 {
-    std::cerr << "CEFsetUp" << std::endl;
+    std::cout << ::getpid() << "::" << ::getppid() << ": " << __FILE__ << ": "
+              << __PRETTY_FUNCTION__ << std::endl;
     CefMainArgs args(argc, argv);
     int exit_code = CefExecuteProcess(args, nullptr, nullptr);
     if (exit_code >= 0)
     {
-        std::cerr << "CefExecuteProcess: child proccess has endend, so exit" << std::endl;
+        std::cerr << ::getpid() << "::" << ::getppid() << ": "
+                  << "[CEF_start] CefExecuteProcess(): Chromium sub-process has completed"
+                  << std::endl;
         exit(exit_code);
     }
     else if (exit_code == -1)
     {
         // we are here in the father proccess.
-        std::cerr << "CefExecuteProcess: father" << std::endl;
+        std::cerr << ::getpid() << "::" << ::getppid() << ": "
+                  << "[CEF_start] CefExecuteProcess(): argv not for Chromium: ignoring!" << std::endl;
     }
+    std::cerr << ::getpid() << "::" << ::getppid() << ": "
+              << "[CEF_start] CefExecuteProcess(): done" << std::endl;
 
-    std::cerr << "CEFsetUp: done" << std::endl;
-    // Configurate Chromium
+    // Configure Chromium
     CefSettings settings;
     // TODO CefString(&settings.locales_dir_path) = "cef/linux/lib/locales";
     settings.windowless_rendering_enabled = true;
-//#if !defined(CEF_USE_SANDBOX)
+    //settings.ignore_certificate_errors = true;
+#if !defined(CEF_USE_SANDBOX)
     settings.no_sandbox = true;
-//#endif
+#endif
 
     bool result = CefInitialize(args, settings, nullptr, nullptr);
     if (!result)
     {
-        std::cerr << "CefInitialize: failed" << std::endl;
+        std::cerr << ::getpid() << "::" << ::getppid() << ": "
+                  << "[CEF_start] CefInitialize: failed" << std::endl;
         exit(-2);
     }
-    std::cerr << "CEFsetUp: OK" << std::endl;
+    std::cerr << ::getpid() << "::" << ::getppid() << ": "
+              << "[CEF_start] CefInitialize: OK" << std::endl;
 }
 
+//------------------------------------------------------------------------------
+static void CEF_stop()
+{
+    std::cerr << ::getpid() << "::" << ::getppid() << ": "
+              << "[CEF_stop]" << std::endl;
+    CefShutdown();
+}
+
+//------------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
-        std::cerr << "CEFsetUp: avant " << std::endl;
-        std::vector<std::string> backup_args;
-        for (int i = 0; i < argc; ++i)
-        {
-           std::cerr << "arg " << i << ": " << argv[i] << std::endl;
-           backup_args.push_back(argv[i]);
+int main(int argc, char *argv[])
+{
+    // Backup command line since CEF and Godot are sharing argv and CEF is
+    // modifying it.
+    std::cout << ::getpid() << "::" << ::getppid() << ": "
+              << __FILE__ << ": " << __PRETTY_FUNCTION__ << std::endl;
+    std::vector<std::string> backup_args;
+    for (int i = 0; i < argc; ++i)
+    {
+        std::cerr << "arg " << i << ": " << argv[i] << std::endl;
+        backup_args.push_back(argv[i]);
+    }
+
+    // Start forking CEF
+    CEF_start(argc, argv);
+
+    // Restore command line since for Godot.
+    std::cerr << ::getpid() << "::" << ::getppid() << ": "
+              << "[CEF_start] Apres CEF_start " << std::endl;
+    for (int i = 0; i < argc; ++i)
+    {
+        std::cerr << "arg " << i << ": " << argv[i] << std::endl;
+        argv[i] = &(backup_args[i][0]);
+    }
+
+    OS_X11 os;
+
+    setlocale(LC_CTYPE, "");
+
+    char *cwd = (char *)malloc(PATH_MAX);
+    ERR_FAIL_COND_V(!cwd, ERR_OUT_OF_MEMORY);
+    char *ret = getcwd(cwd, PATH_MAX);
+
+    Error err = Main::setup(argv[0], argc - 1, &argv[1]);
+    if (err != OK) {
+            std::cerr << ::getpid() << "::" << ::getppid()
+                      << ": Main::setup failed" << std::endl;
+        free(cwd);
+                CEF_stop();
+        return 255;
+    }
+
+    if (Main::start()) {
+        os.run(); // it is actually the OS that decides how to run
+    }
+    Main::cleanup();
+
+    if (ret) { // Previous getcwd was successful
+        if (chdir(cwd) != 0) {
+            ERR_PRINT("Couldn't return to previous working directory.");
         }
+    }
+    free(cwd);
 
-        CEFsetUp(argc, argv);
-        std::cerr << "CEFsetUp: Apres " << std::endl;
-        for (int i = 0; i < argc; ++i)
-        {
-           std::cerr << "arg " << i << ": " << argv[i] << std::endl;
-           argv[i] = &(backup_args[i][0]);
-        }
-
-	OS_X11 os;
-
-	setlocale(LC_CTYPE, "");
-
-	char *cwd = (char *)malloc(PATH_MAX);
-	ERR_FAIL_COND_V(!cwd, ERR_OUT_OF_MEMORY);
-	char *ret = getcwd(cwd, PATH_MAX);
-
-	Error err = Main::setup(argv[0], argc - 1, &argv[1]);
-	if (err != OK) {
-		free(cwd);
-                CefShutdown();
-		return 255;
-	}
-
-	if (Main::start()) {
-		os.run(); // it is actually the OS that decides how to run
-	}
-	Main::cleanup();
-
-	if (ret) { // Previous getcwd was successful
-		if (chdir(cwd) != 0) {
-			ERR_PRINT("Couldn't return to previous working directory.");
-		}
-	}
-	free(cwd);
-
-        CefShutdown();
-	return os.get_exit_code();
+    CEF_stop();
+    return os.get_exit_code();
 }
 ```
 
@@ -573,7 +612,7 @@ scons -j$(nproc) platform=x11
 ```
 
 Evidemment, la compilation ne se passe pas bien. En effet Godot et CEF semblent
-avoir choisi les mêmes noms pour leurs erreurs
+avoir choisi les mêmes noms pour leurs erreurs sans la protection des namespaces
 `/home/qq/chreage_workspace/built_CEF/include/base/internal/cef_net_error_list.h`. Pour
 le moment on va modifier
 `/home/qq/chreage_workspace/built_CEF/include/internal/cef_types.h` et changer :
@@ -588,7 +627,7 @@ par :
 ```
 
 Cette modification, fonctionne pour le moment mais fera échouer la compilation de CEF au prochain coup.
-Une meilleure solution consiste à chnager temporairement les noms des erreurs CEF (ou Godot) le temps
+Une meilleure solution consiste à changer temporairement les noms des erreurs CEF (ou Godot) le temps
 d'inclure les includes.
 ```c++
 // Chromium Embedded Framework
@@ -619,25 +658,35 @@ Il reste un dernier warning mais il ne semble pas impacter note module. Il faudr
 ## Vérification du module Godot
 
 Si vous avez fait hériter votre classe proxy de `Node`, il suffit de cliquer sur
-le bouton '+' dans le scène graphe pour ajouter votre nœud. Si avez fait hériter
-votre classe proxy de `Reference`, on peut créer un noeud Mesh (comme un cube)
-et lui attacher un script avec par exemple code suivant :
+le bouton '+' dans le scène graphe pour ajouter votre nœud. Voici un exemple avec
+un Control, deux CEF, deux TextureRect et le GDScript suivant:
+
 ```
+# Mouse and keyboard events needed for Chromium Embedded Framework
+func _input(event):
+    if event is InputEventMouseButton:
+        get_node("CEF1/BrowserView").on_mouse_click(event.button_index, event.pressed)
+        get_node("CEF2/BrowserView").on_mouse_click(event.button_index, event.pressed)
+    elif event is InputEventMouseMotion:
+        get_node("CEF1/BrowserView").on_mouse_moved(event.position.x, event.position.y)
+        get_node("CEF2/BrowserView").on_mouse_moved(event.position.x, event.position.y)
+
+# Create two Chromium Embedded Framework browser view inside a 3D scene
 func _ready():
-    var s = Cef.new()
-    s.do_action(10)
+    var CEF1 = get_node("CEF1/BrowserView")
+    CEF1.reshape(400, 400)
+    CEF1.load_url("https://youtu.be/")
+    get_node("CEF1/TextureRect").texture = CEF1.get_texture()
+
+    var CEF2 = get_node("CEF2/BrowserView")
+    CEF2.reshape(200, 200)
+    CEF2.load_url("https://bitbucket.org/")
+    get_node("CEF2/TextureRect").texture = CEF2.get_texture()
+    pass
+
+# Runtime
+func _process(delta):
     pass
 ```
 
-Dans le deux cas, on aura un message sur la console :
-```
-Hello ProxyCEF
-ProxyCEF do action 10
-Bye ProxyCEF
-```
-
-Si vous avez compilé CEF et Godot depuis un Docker, il vous faut surement indiquer le chemin de la libCEF:
-```bash
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$WORKSPACE_STIGMEE/CEF/chromium_git/chromium/src/out/Release_GN_x64
-```
-
+Vous devriez voir une page web s'afficher.

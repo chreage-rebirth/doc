@@ -1,9 +1,13 @@
-# Getting fun with Chromium Embedded Framework (CEF)
+# Understanding Chromium Embedded Framework (CEF)
 
-Let experiment with prebuilt CEF **alone** (meaning without Godot). We will understand how the `cefsimple` application given in the `tests` folder is compiled. This application demonstrates the minimal functionality required to create a browser window. This is
-the minimal code source needed to embed inside Godot.
+Let experiment with prebuilt CEF **alone** (meaning without Godot). We will
+understand how the `cefsimple` application given in the `tests` folder is
+compiled. This application demonstrates the minimal functionality required to
+create a browser window. This is the minimal code source needed to embed inside
+Godot. For its integration with Godot, please read the following [doc](tuto_modif_godot_fr.md).
 
 These steps have been tested on Debian 11 64-bits and Ubuntu 18.04 64-bits.
+
 
 Firstly, let name some folders. This will make our code shorter in this document. Do not forget to adapt the CEF version to your operating system with the desired version on https://cef-builds.spotifycdn.com/index.html:
 ```bash
@@ -44,7 +48,7 @@ mkdir $CEF/build
 cd $CEF/build
 cmake -DCMAKE_BUILD_TYPE=Debug ..
 make -j$(nproc)
-# make -j$(nproc) cefclient cefsimple ceftests
+# make -j$(nproc) cefclient cefsimple ceftests
 ```
 
 You can also follow https://github.com/Zabrimus/cef-makefile-sample in where a `pkg-config` file is created making simpler
@@ -104,8 +108,8 @@ Let compile `cefsimple2` (c++ >= version 14 is needed). Since this example creat
 g++ --std=c++14 -W -Wall -Wno-unused-parameter -DCEF_USE_SANDBOX -DNDEBUG -D_FILE_OFFSET_BITS=64 -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -I$CEF -I$CEF/include cefsimple_linux.cc simple_app.cc simple_handler.cc simple_handler_linux.cc -o cefsimple2 ./libcef.so ./libcef_dll_wrapper.a -lX11
 ```
 
-- The `-DNDEBUG` is for disabling the `#include <assert>` (See https://stackoverflow.com/a/5354352/8877076)
-- The `-DCEF_USE_SANDBOX` is explained here https://bitbucket.org/chromiumembedded/cef/wiki/SandboxSetup
+- The `-DNDEBUG` is for disabling the `#include <assert>` when compiled in release mode (See https://stackoverflow.com/a/5354352/8877076)
+- The `-DCEF_USE_SANDBOX` is explained here https://bitbucket.org/chromiumembedded/cef/wiki/SandboxSetup and https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/design/sandbox.md
 - The `-D_FILE_OFFSET_BITS=64` is probably for working with files larger than 2Gb.
 - The `-D__STDC_FORMAT_MACROS` is for https://www.cplusplus.com/reference/cinttypes/
 - The `-I` are for searching header files in given folders.
@@ -167,7 +171,248 @@ To fix these errors:
 [1122/222607.278567:WARNING:gpu_sandbox_hook_linux.cc(450)] dlopen(libxcb-sync.so) failed with error: libxcb-sync.so: Ne peut ouvrir le fichier d'objet partagé: Aucun fichier ou dossier de ce type
 ```
 
+## Understanding how CEF starts its sub-processes
+
+**Note:** For the moment we hardly understood CEF guts. The following
+explanations in this document are probably false due to our poor understandings
+of Chromium. They come from our understanding of the reading of the official
+documentation and mainly on our numerous painful hours of failures.
+
+The Official CEF documentation at
+https://bitbucket.org/chromiumembedded/cef/wiki/Tutorial.md says:
+- CEF uses multiple processes. The main application process is called the
+  "browser" process. Sub-processes will be created for renderers, plugins, GPU,
+  etc.
+- On Windows and Linux the same executable can be used for the main process and
+  sub-processes. On OS X you are required to create a separate executable and
+  app bundle for sub-processes.
+- Most processes in CEF have multiple threads. CEF provides functions and
+  interfaces for posting tasks between these various threads.
+
+Let traduce these sentences.
+
+- For Linux, through any "activity monitor" applications able to show running
+  processes, we can see all that the cefsimple process is not a single running
+  process but several as shown in the following picture (TODO ADD picture):
+
+![cefsimplelinux](tuto_fun_cef_03.png)
+
+- For Mac OS X, the following picture shows the content of the cefsimple
+  application for Mac OS X compiled with the CMake command seen previously:
+
+![cefsimpleosx](tuto_fun_cef_01.png)
+
+Let remind that a Mac OS X application is a special folder holding binaries and
+resources. The main cefsimple binary is stored in `Contents/MacOS/` while the
+others binaries (in fact they are another Mac applications) renderers, plugins,
+GPU are stored in `Contents/Frameworks/`. Libraries are stored in
+`Contents/Frameworks/Chromium Embedded Framework.framework/Libraries` and assets
+are stored in Libraries are stored in `Contents/Frameworks/Chromium Embedded
+Framework.framework/Resources`.
+
+The documentation does not explain well how threads and processes are started
+and how they are linked.  The following picture is the one found on this
+[page](https://www.chromium.org/developers/design-documents/multi-process-architecture).
+Processes are communicating through an inter-process communication (IPC) as
+described
+[here](https://www.chromium.org/developers/design-documents/inter-process-communication)
+
+![cefprocesses](tuto_fun_cef_02.png)
+
+How all these processes are started and how to use them for inside Godot for the
+Stigmee application ? The official documentation at
+https://bitbucket.org/chromiumembedded/cef/wiki/GeneralUsage.md says in section
+"Entry-Point Function" :
+- **Single Executable:** When running as a single executable the entry-point
+  function is required to differentiate between the different process types. The
+  single executable structure is supported on Windows and Linux but not on
+  MacOS.
+- **Separate Sub-Process Executable:** When using a separate sub-process
+  executable you need two separate executable projects and two separate
+  entry-point functions.
+
+Let rephrase these sentences. CEF can be embedded inside a C++ application
+and started by one of the following ways:
+- **Single Executable.** This is the simple way when the `int main(int argc,
+  char** argv)` function of the host application is reachable. When Chromium is
+  starting its forks, it forks this process and modifies the command line to
+  give different behavior for each process.
+- **Separate Sub-Process Executable:** if the `int main(int argc, char** argv)`
+  function of the host application cannot be reached (or you are on Mac OS X),
+  you have to launch another application which will access to its own main
+  function and will be able to start Chromium and its forks through the command
+  line as described in the first point.
+
+Let remind that all C/C++ applications start from the `int main(int argc, char**
+argv)` function. This function takes two arguments: `argc` and `argv` which hold
+the command lines passed to the application when launched from a Linux
+console. For example the following command line `myapplication --help`. The
+`argv` is an array of strings holding all arguments as strings (even integers
+are stored as strings). In our example the 0th argument is always the
+application name `"myapplication"` and the 1st argument is `"--help"`. The
+`argc` indicates the number of arguments (therefore the size of the array). In
+our example 2.
+
+### To start CEF from a single executable.
+
+The documentation for `CefExecuteProcess` says:
+
+```
+This function should be called from the application entry point function to
+execute a secondary process. It can be used to run secondary processes from
+the browser client executable (default behavior) or from a separate
+executable specified by the CefSettings.browser_subprocess_path value. If
+called for the browser process (identified by no "type" command-line value)
+it will return immediately with a value of -1. If called for a recognized
+secondary process it will block until the process should exit and then return
+the process exit code. The |application| parameter may be empty. The
+|windows_sandbox_info| parameter is only used on Windows and may be NULL (see
+cef_sandbox_win.h for details).
+```
+
+Let traduce this sentence. `CefExecuteProcess` forks the process of your host
+application and starts another executable (Chromium or sub-process executable).
+Forking a process consists to duplicate the whole current process (its memory,
+its file descriptors, registers such as pointer counter ...) therefore you will
+have two identical processes running the exact the same code source. They are
+named `parent` (or `father`) and `child`. The parent process is your current
+process and the child is newly duplicated process. To differentiate them and
+make them running different code source the return code of the fork function
+returns the process identifier. An *if-then-else* is used to switch the pointer
+counter to execute different code source. See this example.
+
+``` C++
+int main()
+{
+    pid_t pid = fork();
+    if (pid == -1)
+    {
+        // Error during the fork
+        perror("fork");
+        return EXIT_FAILURE;
+    }
+    else if (pid == 0)
+    {
+        // We are inside the child process
+        printf("Mon PID est %i et celui de mon père est %i\n", getpid(),    getppid());
+    }
+    else
+    {
+        // We are inside the child parent
+        printf("Mon PID est %i et celui de mon fils est %i\n", getpid(), pid);
+    }
+    return EXIT_SUCCESS;
+}
+```
+
+
+`CefExecuteProcess` will block until the Chromium process ends and once Chromium
+has done we immediately call `exit` to avoid calling the code of the parent
+process. Chromium process will keep forking and therefore the same `int main(int
+argc, char** argv)` function of our host application will be executed several
+times. To differentiate the processes, CEF modifies the command line to give
+orders to sub-processes. When the command line is not for a CEF process the
+CefExecuteProcess returns -1 and in this case we do not kill the process.
+
+Let see, what we did initially for Godot, inside the
+`Godot/platform/x11/godot_x11.cpp` file. Note that for this case Godot also uses
+the command line which is shared. To deal with this, we made a backup of the
+command line before starting the process, then restoring the command line for
+Godot.
+
+```C++
+int main(int argc, char** argv)
+{
+    // Backup command line is needed if the host application is also using
+    // the command line with CEF. CEF is modifying it, so backup it to restore
+    // values for the host.
+    std::vector<std::string> backup_args;
+    std::cout << ::getpid() << "::" << ::getppid() << ": "
+              << __FILE__ << ": " << __PRETTY_FUNCTION__ << std::endl;
+    for (int i = 0; i < argc; ++i)
+    {
+        std::cerr << "Before arg " << i << ": " << argv[i] << std::endl;
+        backup_args.push_back(argv[i]);
+    }
+
+    // Call sub-process
+    CefMainArgs args(argc, argv);
+    int exit_code = CefExecuteProcess(args, nullptr, nullptr);
+    if (exit_code >= 0)
+    {
+        // Sub proccess has ended, so exit this process
+        exit(exit_code);
+    }
+    else if (exit_code == -1)
+    {
+        // If called for the browser process (identified by no "type" command-line value)
+        // it will return immediately with a value of -1
+    }
+
+    // Restore command line since for the host application.
+    std::cout << ::getpid() << "::" << ::getppid() << ": "
+              << "[CEF_start] Apres CEF_start " << std::endl;
+    for (int i = 0; i < argc; ++i)
+    {
+        std::cerr << "arg " << i << ": " << argv[i] << std::endl;
+        argv[i] = &(backup_args[i][0]);
+    }
+
+    // Configurate Chromium
+    CefSettings settings;
+    settings.windowless_rendering_enabled = true;
+
+#if !defined(CEF_USE_SANDBOX)
+    settings.no_sandbox = true;
+#endif
+
+    bool result = CefInitialize(args, settings, nullptr, nullptr);
+    if (!result)
+    {
+        std::cerr << "CefInitialize: failed" << std::endl;
+        exit(-2);
+    }
+
+    // Code for the host application
+    ...
+}
+```
+
+### To start CEF from Separate Sub-Process Executable
+
+While modifying the Godot source of Godot was functional (point of view) for
+Linux architecture. The team preferred avoiding that but calling CEF from an
+arbitrary function and for example, from the init of GDScript. Therefore we have
+to use the second method: starting CEF from a separate sub-process executable.
+
+A simple example not using Godot can be find here
+https://github.com/Lecrapouille/OffScreenCEF/tree/master/cefsimple_separate
+
+To achieve starting CEF from a separate sub-process executable, the code source
+of the cefsimple has to be duplicated. The first cefsimple is a pure standalone
+executable which can be run as it. It is named the `Separate Sub-Process
+Executable`. The difference is that `CefExecuteProcess` and `CefInitialize` use
+a pointer from an instance class deriving from `CefApp`. In the official
+cefsimple when CEF wants to refresh the virtual callback method `onPaint` is
+triggered but in this application we do not have to override it to display HTML
+page (the process has builtin rendering). This application is run inside a
+windows.
+
+The primary process does not have to call `CefExecuteProcess` but just
+`CefInitialize` in where a setting is referring to the path of the sub-process
+executable to run. We also define code for configuring the sub-process as
+off-screen process. The primary process override the virtual callback method
+`onPaint` to display HTML with its personal method (SDL2, OpenGL, Godot).
+
+### For Mac OS X
+
+WIP
+
 ## Modifying cefsimple for OpenGL Core or SDL2
+
+**Note:** modifying cefsimple for OpenGL Core or SDL2 was an intermediate step
+for us to understand it better for its integration inside Godot or as Godot
+module. Code can be find here https://github.com/Lecrapouille/OffScreenCEF
 
 There are non-maintained GitHub repos to replace the libX11 by:
 - SDL2: https://github.com/gotnospirit/cef3-sdl2
@@ -190,7 +435,7 @@ int main(int argc, char* argv[])
   }
 ```
 
-`argc, argv` are used by CEF/Chromium when forking they are passing informatio
+`argc, argv` are used by CEF/Chromium when forking they are passing information
 
 Explanation of the source code (OpenGL version) [cefsimple_opengl](https://github.com/Lecrapouille/OffScreenCEF/blob/master/cefsimple_opengl)
 
