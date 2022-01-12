@@ -587,7 +587,7 @@ git remote -v
 git fetch --all
 ```
 
-## Travailler sur plusieurs repo git
+## Travailler sur plusieurs repo git: git-repo
 
 Stigmee est un gros projet, il contient plein de repos GitHub. Gérer une dizaine
 de repo à la main peut commencer à devenir pénible car il faut de temps en temps
@@ -597,7 +597,7 @@ beaucoup de commandes à taper. Des projets comme Android contiennent des
 centaines de repos et c'est pourquoi Google a créé un outil pour gérer tous
 leurs repos via un (ou plusieurs) fichier XML avec peu de commandes à taper. Par
 exemple pour Stigmee ce
-[fichier](https://github.com/stigmee/stigmee/blob/master/default.xml). Par
+[fichier](https://github.com/stigmee/manifest/blob/master/default.xml). Par
 exemple (non contractuel) :
 
 ```
@@ -634,7 +634,7 @@ mettre à jour. La première fois (quand le dossier parent est vide) elle met à
 jour
 
 ```
-repo init -u git@github.com:stigmee/stigmee.git
+repo init -u git@github.com:stigmee/manifest.git
 repo sync
 ```
 
@@ -675,3 +675,17 @@ git branch -a
 Pour nos branches sur le projet `godot-modules` il faut faire:
 - `git checkout main` pour `remotes/github-private/main`.
 - `git checkout dev-lecrapouille` pour `remotes/github-private/dev-lecrapouille`.
+
+Un dernier **inconvénient majeur** de cet outil est qu'il fonctionne mal sur Windows à
+cause des liens symboliques que les Windows inférieurs à la version 10 non gérés
+(en plus des droits admin nécéssaires).
+
+## Travailler sur plusieurs repo git: une alternative plus sure à git-repo
+
+Une alternative à repo est [tsrc](https://dmerejkowsky.github.io/tsrc). Il a
+été conçu pour palier tous les soucis de repo à savoir les liens symboliques et
+les HEAD détachées. Il reprend quasiement les mêmes lignes de commande que repo
+et la seule différence et le format du manifeste: au lieu de XML c'est YAML dont
+le format est donné ici https://dmerejkowsky.github.io/tsrc/ref/manifest-config/
+Une autre page important est celle qui décrit les étapes de la synchronisation des
+repos: https://dmerejkowsky.github.io/tsrc/ref/sync/
