@@ -76,7 +76,16 @@ This application demonstrates a wide range of CEF functionalities.
 
 You can launch `cefclient`:
 ```bash
-./tests/cefclient/Release/cefclient
+./tests/cefclient/Release/cefclient --use-views --load-extension=set_page_color
+```
+
+Note: there is a minor bug with CEF CMakefile: the folder `cefclient/resources/extensions/set_page_color/` is
+not correctly copied inside the build folder `/build/tests/cefclient/Release/cefclient_files/` if you show this error
+message, copy them manually:
+
+```
+[0211/111941.665199:ERROR:extension_util.cc(90)] Failed to load manifest from extensions/set_page_color/manifest.json
+[0211/111941.762079:WARNING:extension_system.cc(139)] Failed to read extension manifest from set_page_color/manifest.json
 ```
 
 ### ceftests
