@@ -45,8 +45,10 @@
 
 ## For Developpers
 
+- The Youtube video logs:
+  - [![fr](doc/fr.png) French](doc/vlog.md)
 - The index of our GitHub repos:
-  - [![en](doc/en.png) English](https://github.com/stigmee/Welcome)
+  - [![en](doc/en.png) English](https://github.com/stigmee/manifest)
 - Git and GitHub for Stigmee (Markdown):
   - [![fr](doc/fr.png) French](doc/tuto_git_fr.md)
 - Continuous inegration and deployment with GitHub (Markdown):
