@@ -4,10 +4,12 @@
 
 - Our GitHub:
   - [![en](doc/en.png) English](https://github.com/stigmee)
-- Our laboratory:
-  - [![fr](doc/fr.png) French ![en](doc/en.png) English](https://labo.stigmee.fr)
+- Our laboratory (private):
+  - [![fr](doc/fr.png) ![en](doc/en.png) French English](https://labo.stigmee.fr)
+- Our mediatheque:
+  - [![fr](doc/fr.png) ![en](doc/en.png) French English](https://mediatheque.stigmee.fr)
 - Our Discord:
-  - [![fr](doc/fr.png) French](https://discord.gg/SB7vAgDyNG)
+  - [![fr](doc/fr.png) ![en](doc/en.png) French English](https://discord.gg/SB7vAgDyNG)
 - Tutorial concerning our Discord (Google doc):
   - [![fr](doc/fr.png) French](https://docs.google.com/document/d/1PurXBZW6FXdPvxGwbI8tUxvNBjJ6qN9o/edit)
 
