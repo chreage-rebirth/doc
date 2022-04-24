@@ -1,6 +1,6 @@
 # Stigmee's documentation
 
-## Welcome
+## Resources
 
 - Our GitHub:
   - [![en](doc/en.png) English](https://github.com/stigmee)
@@ -12,14 +12,16 @@
   - [![fr](doc/fr.png) ![en](doc/en.png) French English](https://discord.gg/SB7vAgDyNG)
 - Tutorial concerning our Discord (Google doc):
   - [![fr](doc/fr.png) French](https://docs.google.com/document/d/1PurXBZW6FXdPvxGwbI8tUxvNBjJ6qN9o/edit)
+- The initial mock-up project:
+  - http://chreage.befuse.com/content/WEBGL/ChreageAlpha0-3/index.html
 
 ## Stigmee's GitHub
 
 - https://github.com/stigmee/install Scripts for building Stigmee and continous integration.
 - https://github.com/stigmee/manifest List of git repos needed to make the Stigmee workspace.
-- https://github.com/stigmee/gdnative-ipfs [Godot](https://godotengine.org/) wrapper for using [IPFS](https://ipfs.io/)
-https://github.com/stigmee/gdnative-cef [Godot](https://godotengine.org/) wrapper for using [CEF](https://bitbucket.org/chromiumembedded/cef/src/master/)
+- https://github.com/stigmee/gdnative-cef [Godot](https://godotengine.org/) wrapper for using [CEF](https://bitbucket.org/chromiumembedded/cef/src/master/)
 - https://github.com/stigmee/gdnative-stigmark [Godot](https://godotengine.org/) wrapper for using bookmarks.
+- https://github.com/stigmee/gdnative-ipfs [Godot](https://godotengine.org/) wrapper for using [IPFS](https://ipfs.io/)
 - https://github.com/stigmee/stigmark-server A Chrome/Firefox plugin for collection bookmarks.
 - https://github.com/stigmee/beebots collecting and scoring URLs.
 - https://github.com/stigmee/assets The graphical assets.
@@ -31,6 +33,7 @@ https://github.com/stigmee/gdnative-cef [Godot](https://godotengine.org/) wrappe
 
 - What is Stigmee ?
   - [![fr](doc/fr.png) French](doc/what_is_stigmee_fr.md)
+  - [![en](doc/en.png) French](doc/what_is_stigmee_en.md)
 - Chreage, the Stigmee proove of concept:
   - [![en](doc/en.png) English](http://chreage.befuse.com/content/WEBGL/ChreageAlpha0-3/index.html)
 - Phd Thesis (pdf):
