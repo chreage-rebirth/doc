@@ -4,6 +4,8 @@
 
 - Our GitHub:
   - [![en](doc/en.png) English](https://github.com/stigmee)
+- Our itch:
+  - [![en](doc/en.png) English](https://stigmee.itch.io)
 - Our laboratory (private):
   - [![fr](doc/fr.png) ![en](doc/en.png) French English](https://labo.stigmee.fr)
 - Our mediatheque:
