@@ -15,7 +15,9 @@
 - Tutorial concerning our Discord (Google doc):
   - [![fr](doc/fr.png) French](https://docs.google.com/document/d/1PurXBZW6FXdPvxGwbI8tUxvNBjJ6qN9o/edit)
 - The initial mock-up project:
-  - http://chreage.befuse.com/content/WEBGL/ChreageAlpha0-3/index.html
+  - [![en](doc/en.png) English](http://chreage.befuse.com/content/WEBGL/ChreageAlpha0-3/index.html)
+- Some dev log videos (french) explaining the code:
+  - [![fr](doc/fr.png) French](https://youtu.be/wWxWAMTDwSw)
 
 ## Stigmee's GitHub
 
